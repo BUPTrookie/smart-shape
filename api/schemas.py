@@ -27,3 +27,15 @@ class HealthResponse(BaseModel):
 class FeedbackRequest(BaseModel):
     prediction_id: int
     actual_delta: dict[str, float]
+
+
+class ShapeSimulateRequest(BaseModel):
+    pre_curve: dict[str, float]
+
+
+class ShapePlanRequest(BaseModel):
+    pre_curve: dict[str, float]
+
+
+class ShapeNextRequest(BaseModel):
+    prediction_id: int

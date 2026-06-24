@@ -28,6 +28,7 @@ class PredictionLog(Base):
     input_json = Column(JSON)  # 压头参数 + Pre 曲线快照
     output_json = Column(JSON)  # 20 点位 Δ 预测结果
     feedback_id = Column(Integer, ForeignKey("feedbacks.id"), nullable=True)
+    attempt = Column(Integer, default=1)  # 第几次整形方案（模式B 兜底重试用）
 
 
 class ShapingRecord(Base):

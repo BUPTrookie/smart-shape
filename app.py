@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from api import routes_history, routes_predict
+from api import routes_history, routes_predict, routes_shape
 
 app = FastAPI(
     title="X9600 整形压头影响预测服务",
@@ -24,6 +24,7 @@ app = FastAPI(
 )
 app.include_router(routes_predict.router)
 app.include_router(routes_history.router)
+app.include_router(routes_shape.router)
 
 
 if __name__ == "__main__":
