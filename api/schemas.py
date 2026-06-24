@@ -22,3 +22,8 @@ class PredictResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     model_version: str
+
+
+class FeedbackRequest(BaseModel):
+    prediction_id: int
+    actual_delta: dict[str, float]
