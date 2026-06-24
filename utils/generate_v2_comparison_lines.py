@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+r"""
 生成DZ算法v2对比结果详细折线图
 按照 charts\detailed_comparison_lines 格式生成
 """
@@ -88,7 +88,7 @@ def create_shape_detailed_lines_chart(df, shape, output_dir):
         ax1.set_ylabel('P值')
         ax1.grid(True, alpha=0.3)
     else:
-        ax1.text(0.5, 0.5, f'无参考结果数据', ha='center', va='center', transform=ax1.transAxes, fontsize=12)
+        ax1.text(0.5, 0.5, '无参考结果数据', ha='center', va='center', transform=ax1.transAxes, fontsize=12)
         ax1.set_title(f'Shape {shape} - 参考结果 (0 条曲线)', fontsize=14, fontweight='bold')
 
     # 2. 生成结果所有曲线
@@ -101,7 +101,7 @@ def create_shape_detailed_lines_chart(df, shape, output_dir):
         ax2.set_ylabel('P值')
         ax2.grid(True, alpha=0.3)
     else:
-        ax2.text(0.5, 0.5, f'无生成结果数据', ha='center', va='center', transform=ax2.transAxes, fontsize=12)
+        ax2.text(0.5, 0.5, '无生成结果数据', ha='center', va='center', transform=ax2.transAxes, fontsize=12)
         ax2.set_title(f'Shape {shape} - 生成结果 (DZ算法v2) (0 条曲线)', fontsize=14, fontweight='bold')
 
     # 3. 叠加对比（使用平均值或代表性曲线）
@@ -220,8 +220,8 @@ def generate_statistics_report(df, output_dir):
                 report += f"- 参考结果P1-P20范围: [{ref_values.min():.3f}, {ref_values.max():.3f}]\n"
                 report += f"- 参考结果P1-P20平均值: {ref_values.mean():.3f}\n"
             else:
-                report += f"- 参考结果P1-P20范围: 无有效数据\n"
-                report += f"- 参考结果P1-P20平均值: 无有效数据\n"
+                report += "- 参考结果P1-P20范围: 无有效数据\n"
+                report += "- 参考结果P1-P20平均值: 无有效数据\n"
 
         if gen_count > 0:
             gen_data = df[df['Generated_Shape'] == shape][p_cols]
@@ -232,8 +232,8 @@ def generate_statistics_report(df, output_dir):
                 report += f"- 生成结果(v2)P1-P20范围: [{gen_values.min():.3f}, {gen_values.max():.3f}]\n"
                 report += f"- 生成结果(v2)P1-P20平均值: {gen_values.mean():.3f}\n"
             else:
-                report += f"- 生成结果(v2)P1-P20范围: 无有效数据\n"
-                report += f"- 生成结果(v2)P1-P20平均值: 无有效数据\n"
+                report += "- 生成结果(v2)P1-P20范围: 无有效数据\n"
+                report += "- 生成结果(v2)P1-P20平均值: 无有效数据\n"
 
         report += "\n"
 

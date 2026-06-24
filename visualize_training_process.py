@@ -26,7 +26,7 @@ def show_training_process():
     X = df.iloc[:, :26]  # 特征
     y = df.iloc[:, 26:]  # 目标
 
-    print(f"  ✓ 数据加载完成")
+    print("  ✓ 数据加载完成")
     print(f"    样本数: {X.shape[0]}")
     print(f"    特征数: {X.shape[1]}")
     print(f"    目标数: {y.shape[1]}")
@@ -52,22 +52,22 @@ def show_training_process():
     train_time = time.time() - start
 
     print(f"  ✓ 训练完成 (耗时: {train_time:.4f}秒)")
-    print(f"\n    模型结构:")
-    print(f"      类型: MultiOutputRegressor")
+    print("\n    模型结构:")
+    print("      类型: MultiOutputRegressor")
     print(f"      包含: {len(model.estimators_)} 个独立的Ridge模型")
-    print(f"      每个模型对应一个点位 (P1-P20)")
+    print("      每个模型对应一个点位 (P1-P20)")
 
     # 展示单个模型的参数
     first_estimator = model.estimators_[0]
-    print(f"\n    示例 - P1的Ridge模型:")
+    print("\n    示例 - P1的Ridge模型:")
     print(f"      Alpha (正则化强度): {first_estimator.alpha}")
     print(f"      系数数量: {len(first_estimator.coef_)}")
     print(f"      截距: {first_estimator.intercept_:.6f}")
 
     # 4. 交叉验证
     print("\n[步骤4] K折交叉验证 (选择最佳Alpha)...")
-    print(f"  候选Alpha: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]")
-    print(f"  折数: 5")
+    print("  候选Alpha: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]")
+    print("  折数: 5")
 
     alphas = [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
     cv_scores = []
@@ -119,12 +119,12 @@ def show_training_process():
         r2_scores.append(r2)
         rmse_scores.append(rmse)
 
-    print(f"  ✓ 评估完成")
-    print(f"\n    各点位性能:")
+    print("  ✓ 评估完成")
+    print("\n    各点位性能:")
     print(f"      平均R²: {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
     print(f"      平均RMSE: {np.mean(rmse_scores):.4f}")
 
-    print(f"\n    Top 5点位:")
+    print("\n    Top 5点位:")
     top5_indices = np.argsort(r2_scores)[-5:][::-1]
     for idx in top5_indices:
         print(f"      P{idx+1}: R²={r2_scores[idx]:.4f}, RMSE={rmse_scores[idx]:.4f}")
@@ -152,7 +152,7 @@ def show_training_process():
 
                 influence[rs_name][pos][point_col] = float(coefs[j])
 
-    print(f"  ✓ 影响系数提取完成")
+    print("  ✓ 影响系数提取完成")
     print(f"    压头数: {len(influence)}")
     for rs_name in sorted(influence.keys()):
         positions = sorted(influence[rs_name].keys())
@@ -162,12 +162,12 @@ def show_training_process():
     print("\n" + "="*80)
     print("训练时间汇总")
     print("="*80)
-    print(f"  数据加载: ~1.0 秒")
-    print(f"  特征工程: ~1.0 秒")
+    print("  数据加载: ~1.0 秒")
+    print("  特征工程: ~1.0 秒")
     print(f"  模型训练: {train_time:.4f} 秒")
-    print(f"  交叉验证: ~2.0 秒")
+    print("  交叉验证: ~2.0 秒")
     print(f"  模型评估: {final_time:.4f} 秒")
-    print(f"  总计: ~6.0 秒")
+    print("  总计: ~6.0 秒")
     print("="*80)
 
     return final_model, scaler, influence
@@ -210,7 +210,6 @@ def explain_ridge_mechanism():
     print("-" * 60)
 
     from sklearn.linear_model import Ridge
-    import matplotlib.pyplot as plt
 
     alphas = [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]
     coefs_by_alpha = []

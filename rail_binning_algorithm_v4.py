@@ -14,7 +14,7 @@ DZ四段算法V4版本 - 物理意义驱动的第三段分类
 import pandas as pd
 import numpy as np
 import logging
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List
 from dataclasses import dataclass
 from pathlib import Path
 import sys
@@ -22,7 +22,6 @@ import sys
 # 添加项目根目录到路径
 sys.path.append(str(Path(__file__).parent))
 
-from constants.bin_categories import BinCategories
 
 # 配置日志
 logging.basicConfig(
@@ -216,7 +215,7 @@ class RailBinningCoreV4:
                 slope_diff = abs(slope_right - slope_left)
 
                 # # 分类逻辑
-                
+
                 # if trend > 0.0008:
                 #     category = 'ARC_UP'  # 上圆弧
                 # elif trend < -0.008:
@@ -235,22 +234,22 @@ class RailBinningCoreV4:
                 # 新的分类逻辑：优先级1：WAVE（剧烈波动型）- 最优先识别
                 if std_dev < 0.03:  # ← 严格但范围小，捕获BIN18
                     category = 'FLAT'
-            
+
                 # 规则2：趋势明确 → ARC（趋势优先于波动）
                 elif trend > 0.015:  # ← 阈值从0.008提升至0.015，避免轻微波动误判
                     category = 'ARC_UP'
                 elif trend < -0.015:
                     category = 'ARC_DOWN'
-                
+
                 # 规则3：剧烈波动（无明确趋势）→ WAVE
                 elif std_dev >= 0.08:  # ← 阈值提升至0.08，减少误伤
                     category = 'WAVE'
-                
+
                 # 规则4：中等波动+弱趋势 → 倾向ARC（波动比圆弧更需关注）
                 else:
                     # 使用slope_diff辅助判断：转折陡峭 → WAVE，否则 → ARC
                     category = 'WAVE' if slope_diff > 0.10 else ('ARC_UP' if trend >= 0 else 'ARC_DOWN')
-            
+
 
                 classifications.append(category)
                 feature_details.append({
@@ -288,7 +287,7 @@ class RailBinningCoreV4:
         if self.df_processed is None:
             raise ValueError("请先进行数据预处理")
 
-        logger.info(f"开始计算4段特征值")
+        logger.info("开始计算4段特征值")
 
         # 计算各段特征值
         for segment_idx in range(1, 5):
@@ -304,7 +303,7 @@ class RailBinningCoreV4:
                     self._calculate_physical_classification_feature(self.df_processed)
                     continue
                 else:
-                    raise ValueError(f"物理分类仅适用于段3")
+                    raise ValueError("物理分类仅适用于段3")
             else:
                 raise ValueError(f"未知的计算方法: {config.method}")
 

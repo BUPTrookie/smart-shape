@@ -1,6 +1,5 @@
 import pandas as pd
 import os
-from collections import Counter
 
 class RSSegmentAnalyzer:
     def __init__(self):
@@ -65,7 +64,7 @@ class RSSegmentAnalyzer:
             print(f"  中位数: {values.median():.4f}")
 
             # 显示所有不同的数值及其出现次数
-            print(f"\n  所有不同数值及其出现次数:")
+            print("\n  所有不同数值及其出现次数:")
             for i, (value, count) in enumerate(value_counts.items(), 1):
                 percentage = count / len(values) * 100
                 print(f"    {i:3d}. 数值: {value:10.4f}, 出现次数: {count:5d}, 占比: {percentage:5.2f}%")
@@ -110,7 +109,7 @@ class RSSegmentAnalyzer:
                 f.write(f"  平均值: {stats['mean']:.4f}\n")
                 f.write(f"  中位数: {stats['median']:.4f}\n\n")
 
-                f.write(f"  所有不同数值及其出现次数:\n")
+                f.write("  所有不同数值及其出现次数:\n")
                 for i, (value, count) in enumerate(stats['value_counts'].items(), 1):
                     percentage = count / stats['total_count'] * 100
                     f.write(f"    {i:3d}. 数值: {value:10.4f}, 出现次数: {count:5d}, 占比: {percentage:5.2f}%\n")

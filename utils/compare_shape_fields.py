@@ -6,8 +6,6 @@ Shape字段比较工具
 """
 
 import pandas as pd
-import numpy as np
-from collections import Counter
 import argparse
 import os
 import sys
@@ -69,7 +67,7 @@ def compare_shape_distributions(df1, df2, file1_name, file2_name):
     shape2_counts = df2['Shape'].value_counts().sort_index()
 
     # 基本信息
-    print(f"\n[INFO] 基本信息:")
+    print("\n[INFO] 基本信息:")
     print(f"{file1_name:25} - 总行数: {len(df1)}, Shape类型数: {len(shape1_counts)}")
     print(f"{file2_name:25} - 总行数: {len(df2)}, Shape类型数: {len(shape2_counts)}")
 
@@ -98,11 +96,11 @@ def compare_shape_distributions(df1, df2, file1_name, file2_name):
     comparison_df = pd.DataFrame(comparison_data)
 
     # 显示对比表格
-    print(f"\n[INFO] 详细对比:")
+    print("\n[INFO] 详细对比:")
     print(comparison_df.to_string(index=False))
 
     # 差异分析
-    print(f"\n[INFO] 差异分析:")
+    print("\n[INFO] 差异分析:")
 
     # 找出新增的Shape类型
     new_shapes = set(shape2_counts.index) - set(shape1_counts.index)
@@ -117,7 +115,7 @@ def compare_shape_distributions(df1, df2, file1_name, file2_name):
     # 找出显著差异的Shape类型
     significant_diffs = comparison_df[abs(comparison_df['diff_%'].str.rstrip('%').astype(float)) > 5.0]
     if not significant_diffs.empty:
-        print(f"  [WARNING] 显著差异的Shape类型(>5%):")
+        print("  [WARNING] 显著差异的Shape类型(>5%):")
         for _, row in significant_diffs.iterrows():
             print(f"     {row['Shape']}: {row['diff_%']}")
 
@@ -131,7 +129,7 @@ def compare_shape_distributions(df1, df2, file1_name, file2_name):
         total_common_count = sum(shape1_counts.get(shape, 0) for shape in common_shapes)
         similarity = total_common_count / max(len(df1), len(df2)) * 100
 
-        print(f"\n[INFO] 一致性分析:")
+        print("\n[INFO] 一致性分析:")
         print(f"  共同Shape类型数: {len(common_shapes)}")
         print(f"  整体相似度: {similarity:.2f}%")
 
@@ -254,7 +252,7 @@ def main():
             sys.exit(1)
 
         # 比较Shape字段
-        result = compare_shape_distributions(
+        compare_shape_distributions(
             ref_df, gen_df,
             os.path.basename(args.ref),
             os.path.basename(args.gen)

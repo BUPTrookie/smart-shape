@@ -261,14 +261,14 @@ def test_v4_physical_classification():
 
         # Shape分布
         shape_counts = normal_data["shape_v4"].value_counts()
-        print(f"\\nShape分布 (前10个):")
+        print("\\nShape分布 (前10个):")
         for shape, count in shape_counts.head(10).items():
             percentage = count / len(normal_data) * 100
             print(f"  {shape}: {count} 条 ({percentage:.1f}%)")
 
         # 保存结果
         normal_data.to_csv("test_v4_results.csv", index=False)
-        print(f"\\n结果已保存到 test_v4_results.csv")
+        print("\\n结果已保存到 test_v4_results.csv")
 
         return normal_data
 

@@ -331,7 +331,7 @@ def main():
     logger.info(f"  {x_coords}")
 
     # 3. 为每个X坐标绘制拟合曲线
-    logger.info(f"\n生成各X坐标的拟合曲线...")
+    logger.info("\n生成各X坐标的拟合曲线...")
     all_results = []
 
     for x_coord in x_coords:
@@ -391,11 +391,11 @@ def main():
         )
 
     # 4. 创建汇总表
-    logger.info(f"\n生成汇总表...")
+    logger.info("\n生成汇总表...")
     create_summary_table(all_results, OUTPUT_DIR / "distance_decay_summary.csv")
 
     # 5. 生成总结报告
-    logger.info(f"\n生成总结报告...")
+    logger.info("\n生成总结报告...")
     with open(OUTPUT_DIR / "analysis_report.txt", 'w', encoding='utf-8') as f:
         f.write("=" * 80 + "\n")
         f.write("Distance Decay Analysis - By X Coordinate\n")
@@ -444,9 +444,9 @@ def main():
         f.write("  - distance_decay_summary.csv: Statistical summary table\n")
         f.write("  - analysis_report.txt: This report\n")
 
-    logger.info(f"\n" + "=" * 80)
+    logger.info("\n" + "=" * 80)
     logger.info(f"Analysis complete! Results saved to: {OUTPUT_DIR}")
-    logger.info(f"=" * 80)
+    logger.info("=" * 80)
 
 
 if __name__ == "__main__":

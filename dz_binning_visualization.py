@@ -7,9 +7,7 @@ DZ四段算法分类效果可视化工具
 """
 
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
 import sys
 import os
 from datetime import datetime
@@ -260,7 +258,7 @@ class DZBinningVisualizer:
                 print(f"生成 {bin_name} 图像时出错: {e}")
                 continue
 
-        print(f"\n图像生成完成！")
+        print("\n图像生成完成！")
         print(f"保存位置: {self.output_dir}")
         print(f"成功生成: {len(created_files)} 个图像文件")
 
@@ -335,7 +333,7 @@ class DZBinningVisualizer:
             # 3. 生成总结报告
             report_file = self.create_summary_report(created_files)
 
-            print(f"\n✅ 可视化完成！")
+            print("\n✅ 可视化完成！")
             print(f"📊 共生成 {len(created_files)} 个BIN分类图像")
             print(f"📄 位置: {self.output_dir}")
             print(f"📋 报告: {report_file}")

@@ -24,7 +24,7 @@ import logging
 import warnings
 import os
 from datetime import datetime
-from collections import Counter, defaultdict
+from collections import Counter
 from typing import Dict, List, Tuple, Optional
 
 # sklearn相关
@@ -35,8 +35,6 @@ from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 
 # 可视化
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # 导入配置
 import rs_impact_config as config
@@ -219,7 +217,7 @@ class FeatureEngineer:
         # 尝试从统计文件读取
         if config.RSX_STATS_FILE and os.path.exists(config.RSX_STATS_FILE):
             try:
-                stats_df = pd.read_csv(config.RSX_STATS_FILE)
+                pd.read_csv(config.RSX_STATS_FILE)
                 self.logger.info(f"从统计文件读取RSX档位: {config.RSX_STATS_FILE}")
                 # 解析统计文件...（根据实际格式调整）
             except Exception as e:
@@ -491,7 +489,7 @@ class ModelTrainer:
 
         # 使用第一个点位作为示例选择alpha（实际应用中可用平均得分）
         target_point = "delta_P1"
-        y_target = y_train[target_point]
+        y_train[target_point]
 
         for alpha in config.ALPHA_CANDIDATES:
             kf = KFold(
@@ -819,7 +817,7 @@ class RSImpactAnalyzer:
             self.test_data = self.paired_data.loc[test_indices].reset_index(drop=True)
 
             # 数据分布诊断
-            self.logger.info(f"\n数据分布诊断:")
+            self.logger.info("\n数据分布诊断:")
 
             # 1. 压头使用情况分布
             for rs_name in ["RS1", "RS2", "RS3", "RS4"]:
@@ -847,12 +845,12 @@ class RSImpactAnalyzer:
             train_delta_std = self.train_data[delta_cols].values.std()
             test_delta_std = self.test_data[delta_cols].values.std()
 
-            self.logger.info(f"\nDelta值标准差:")
+            self.logger.info("\nDelta值标准差:")
             self.logger.info(f"  训练集: {train_delta_std:.6f}")
             self.logger.info(f"  测试集: {test_delta_std:.6f}")
 
             if train_delta_std > test_delta_std * 1.2:
-                self.logger.warning(f"  ⚠️ 训练集波动显著更大,可能包含更多离群值")
+                self.logger.warning("  ⚠️ 训练集波动显著更大,可能包含更多离群值")
 
             # 4. 模型训练（仅用训练集）
             self.logger.info("\n[4/7] 模型训练与交叉验证（训练集）")
@@ -957,7 +955,7 @@ class RSImpactAnalyzer:
         self.logger.info("=" * 80)
 
         # 数据统计
-        self.logger.info(f"\n数据统计:")
+        self.logger.info("\n数据统计:")
         self.logger.info(f"  原始记录: {len(self.raw_data)} 条")
         self.logger.info(f"  配对样本: {len(self.paired_data)} 对")
 
@@ -970,7 +968,7 @@ class RSImpactAnalyzer:
 
         # 模型性能 - 训练集
         if self.metrics_train:
-            self.logger.info(f"\n模型性能 - 训练集:")
+            self.logger.info("\n模型性能 - 训练集:")
             self.logger.info(f"  最佳Alpha: {self.trainer.best_alpha}")
             self.logger.info(
                 f"  平均R2: {self.metrics_train['global']['mean_R2']:.4f} ± {self.metrics_train['global']['std_R2']:.4f}"
@@ -980,7 +978,7 @@ class RSImpactAnalyzer:
             )
 
             # Top点位性能
-            self.logger.info(f"\n训练集点位R2 Top 5:")
+            self.logger.info("\n训练集点位R2 Top 5:")
             point_r2 = [
                 (col, self.metrics_train[f"delta_{col}"]["R2"])
                 for col in config.POINT_COLUMNS
@@ -992,7 +990,7 @@ class RSImpactAnalyzer:
 
         # 模型性能 - 测试集
         if self.metrics_test:
-            self.logger.info(f"\n模型性能 - 测试集:")
+            self.logger.info("\n模型性能 - 测试集:")
             self.logger.info(
                 f"  平均R2: {self.metrics_test['global']['mean_R2']:.4f} ± {self.metrics_test['global']['std_R2']:.4f}"
             )
@@ -1001,7 +999,7 @@ class RSImpactAnalyzer:
             )
 
             # Top点位性能
-            self.logger.info(f"\n测试集点位R2 Top 5:")
+            self.logger.info("\n测试集点位R2 Top 5:")
             point_r2 = [
                 (col, self.metrics_test[f"delta_{col}"]["R2"])
                 for col in config.POINT_COLUMNS
@@ -1016,40 +1014,40 @@ class RSImpactAnalyzer:
                 train_r2 = self.metrics_train["global"]["mean_R2"]
                 test_r2 = self.metrics_test["global"]["mean_R2"]
                 overfitting = train_r2 - test_r2
-                self.logger.info(f"\n过拟合检测:")
+                self.logger.info("\n过拟合检测:")
                 self.logger.info(f"  R2差异 (训练-测试): {overfitting:.4f}")
 
                 if overfitting > 0.05:
                     # 训练集显著高于测试集 -> 典型过拟合
                     self.logger.warning(
-                        f"  ⚠️ 可能存在过拟合 (训练R² >> 测试R², 差异 > 0.05)"
+                        "  ⚠️ 可能存在过拟合 (训练R² >> 测试R², 差异 > 0.05)"
                     )
                 elif overfitting < -0.05:
                     # 测试集显著高于训练集 -> 数据分布不均或训练集有离群值
                     self.logger.warning(
-                        f"  ⚠️ 异常: 测试集性能显著优于训练集 (差异 < -0.05)"
+                        "  ⚠️ 异常: 测试集性能显著优于训练集 (差异 < -0.05)"
                     )
-                    self.logger.warning(f"  可能原因:")
-                    self.logger.warning(f"    1. 随机划分导致训练集包含更多难预测样本")
-                    self.logger.warning(f"    2. 训练集存在离群值,拉低了整体R²")
-                    self.logger.warning(f"    3. 建议: 使用分层采样或交叉验证")
+                    self.logger.warning("  可能原因:")
+                    self.logger.warning("    1. 随机划分导致训练集包含更多难预测样本")
+                    self.logger.warning("    2. 训练集存在离群值,拉低了整体R²")
+                    self.logger.warning("    3. 建议: 使用分层采样或交叉验证")
                 else:
                     # 差异在±0.05之间 -> 正常范围
-                    self.logger.info(f"  ✓ 模型泛化性能良好 (差异在±0.05范围内)")
+                    self.logger.info("  ✓ 模型泛化性能良好 (差异在±0.05范围内)")
 
         # Top5最大偏差分析
         self._print_top_errors()
 
         # 影响系数概览
         if self.influence:
-            self.logger.info(f"\n影响系数概览:")
+            self.logger.info("\n影响系数概览:")
             for rs_name in sorted(self.influence.keys()):
                 positions = sorted(self.influence[rs_name].keys())
                 self.logger.info(f"  {rs_name}: {len(positions)} 个位置档位")
 
     def _print_top_errors(self):
         """输出训练集和测试集的Top5最大偏差样本"""
-        self.logger.info(f"\n" + "=" * 80)
+        self.logger.info("\n" + "=" * 80)
         self.logger.info("Top5 最大偏差样本分析")
         self.logger.info("=" * 80)
 

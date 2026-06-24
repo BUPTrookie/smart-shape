@@ -5,7 +5,6 @@
 支持扩展不同分类标签和分类规则
 """
 
-from enum import Enum
 from typing import Dict, List
 
 class ClassificationLabels:

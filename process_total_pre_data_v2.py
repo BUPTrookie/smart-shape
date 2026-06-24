@@ -8,7 +8,6 @@ import pandas as pd
 import os
 import sys
 import logging
-from datetime import datetime
 
 # 添加当前目录到路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -104,11 +103,11 @@ def process_total_pre_data():
     if 'Shape' in pre_data.columns:
         ref_shape_counts = pre_data['Shape'].value_counts()
         ref_bin_counts = pre_data['BIN'].value_counts()
-        print(f"\n【Shape类型对比】")
+        print("\n【Shape类型对比】")
         print(f"参考Shape分布: {dict(ref_shape_counts)}")
         print(f"生成Shape分布: {dict(result_df['Shape'].value_counts())}")
 
-        print(f"\n【BIN分类对比】")
+        print("\n【BIN分类对比】")
         print(f"参考BIN分布: {dict(ref_bin_counts)}")
         print(f"生成BIN分布: {dict(result_df['BIN'].value_counts())}")
 
@@ -116,12 +115,12 @@ def process_total_pre_data():
         shape_consistency = (pre_data['Shape'] == pre_data['Generated_Shape']).sum()
         bin_consistency = (pre_data['BIN'] == pre_data['Generated_BIN']).sum()
 
-        print(f"\n【一致性分析】")
+        print("\n【一致性分析】")
         print(f"Shape一致: {shape_consistency}/{len(pre_data)} ({shape_consistency/len(pre_data)*100:.2f}%)")
         print(f"BIN一致: {bin_consistency}/{len(pre_data)} ({bin_consistency/len(pre_data)*100:.2f}%)")
 
     else:
-        print(f"\n【生成结果统计】")
+        print("\n【生成结果统计】")
         print(f"生成Shape分布: {dict(result_df['Shape'].value_counts())}")
         print(f"生成BIN分布: {dict(result_df['BIN'].value_counts())}")
 

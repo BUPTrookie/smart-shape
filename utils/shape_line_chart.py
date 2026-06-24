@@ -88,12 +88,12 @@ def generate_shape_line_chart(direction: str,
     gen_df = load_csv_file(gen_file_path)
 
     if ref_df is None or gen_df is None:
-        print(f"  [ERROR] 文件加载失败")
+        print("  [ERROR] 文件加载失败")
         return False
 
     # 检查必要的列
     if 'Shape' not in ref_df.columns or 'Shape' not in gen_df.columns:
-        print(f"  [ERROR] 文件中缺少Shape列")
+        print("  [ERROR] 文件中缺少Shape列")
         return False
 
     # 获取数据列
@@ -107,13 +107,13 @@ def generate_shape_line_chart(direction: str,
     gen_data_cols = [col for col in data_cols if col in gen_df.columns]
 
     if not ref_data_cols or not gen_data_cols:
-        print(f"  [ERROR] 文件中缺少数据列")
+        print("  [ERROR] 文件中缺少数据列")
         return False
 
     # 使用共有的数据列
     common_data_cols = list(set(ref_data_cols) & set(gen_data_cols))
     if not common_data_cols:
-        print(f"  [ERROR] 没有共同的数据列")
+        print("  [ERROR] 没有共同的数据列")
         return False
 
     # 按数据列出现的顺序排序
@@ -128,7 +128,7 @@ def generate_shape_line_chart(direction: str,
     all_shapes = sorted(set(ref_shape_groups.groups.keys()) | set(gen_shape_groups.groups.keys()))
 
     if not all_shapes:
-        print(f"  [WARNING] 没有找到Shape数据")
+        print("  [WARNING] 没有找到Shape数据")
         return False
 
     print(f"  [INFO] 找到 {len(all_shapes)} 种Shape类型: {all_shapes}")

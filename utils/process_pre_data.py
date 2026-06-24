@@ -212,7 +212,7 @@ def main():
         else:
             print("[WARNING] 数据处理完成，但完整性验证有警告")
 
-        print(f"[INFO] 处理统计:")
+        print("[INFO] 处理统计:")
         print(f"   - 总数据行数: {len(processed_df)}")
 
         if 'Status' in processed_df.columns:

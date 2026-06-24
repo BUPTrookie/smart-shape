@@ -1,0 +1,41 @@
+# ===========================================================================
+# 项目配置（ruff：lint + format）
+# 文档: https://docs.astral.sh/ruff/
+# 用法:
+#   ruff check .            # 检查
+#   ruff check . --fix      # 自动修复可修复的问题
+#   ruff format .           # 格式化
+# ===========================================================================
+
+[tool.ruff]
+# 不纳入 lint 的路径
+extend-exclude = [
+    "smart_shape",       # 独立的参考项目，不归本项目管
+    "Data",
+    "Output",
+    "charts",
+    ".spec-workflow",
+    ".pytest_cache",
+]
+line-length = 100
+target-version = "py39"
+fix = true               # 默认启用自动修复
+
+[tool.ruff.lint]
+# 规则集（先从基础集起步，后续可按需扩展）：
+#   E/W = pycodestyle 风格/警告
+#   F   = pyflakes（未用 import/变量等真实缺陷）
+select = ["E", "W", "F"]
+ignore = [
+    "E402",  # 模块级 import 不在文件顶部（本项目有 sys.path 操作在 import 前）
+    "E501",  # 行长超限（交给 formatter，不报错）
+    "E741",  # 模糊变量名（项目中存在 l/I 等短变量名）
+]
+
+[tool.ruff.lint.per-file-ignores]
+# __init__.py 的 re-export 与测试文件的 import 不算「未使用」
+"__init__.py" = ["F401"]
+"test_*.py" = ["F401"]
+
+[tool.ruff.format]
+quote-style = "double"

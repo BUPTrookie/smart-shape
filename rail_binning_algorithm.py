@@ -10,8 +10,7 @@ import numpy as np
 import logging
 import warnings
 import sys
-import locale
-from typing import Dict, List, Tuple, Optional
+from typing import List
 
 # 设置编码处理，解决Windows中文显示问题
 # 用 reconfigure 而非 detach：detach() 会破坏 pytest 等工具的 stdout capture
@@ -25,7 +24,6 @@ if sys.platform == 'win32':
 # 导入常量定义
 from constants import (
     FieldDefinitions,
-    ClassificationLabels,
     BinCategories,
     ProductConfigs
 )

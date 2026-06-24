@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from collections import Counter
 
 # 设置中文字体
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']
@@ -62,7 +61,7 @@ class V4ResultVisualizer:
             # 绘制平均值线（加粗）
             mean_values = category_data[point_columns].mean()
             ax.plot(range(1, 21), mean_values.values, color='black',
-                   linewidth=3, label=f'平均值')
+                   linewidth=3, label='平均值')
 
             # 设置标题和标签
             avg_trend = category_data['seg3_trend'].mean()
@@ -151,8 +150,8 @@ class V4ResultVisualizer:
         x = np.arange(len(categories))
         width = 0.35
 
-        bars1 = ax3.bar(x - width/2, trend_means, width, label='平均趋势', alpha=0.7)
-        bars2 = ax3.bar(x + width/2, std_means, width, label='平均标准差', alpha=0.7)
+        ax3.bar(x - width/2, trend_means, width, label='平均趋势', alpha=0.7)
+        ax3.bar(x + width/2, std_means, width, label='平均标准差', alpha=0.7)
 
         ax3.set_title('物理分类特征统计', fontsize=12, fontweight='bold')
         ax3.set_xlabel('物理分类类型')
@@ -350,24 +349,24 @@ class V4ResultVisualizer:
         """创建综合统计报告"""
         report = []
         report.append("# DZ四段算法V4版本物理分类分析报告")
-        report.append(f"\\n## 基础统计")
+        report.append("\\n## 基础统计")
         report.append(f"- 总数据量: {len(df)} 条")
-        report.append(f"- MMM数据: 374 条 (14.1%)")
+        report.append("- MMM数据: 374 条 (14.1%)")
         report.append(f"- 物理分类数据: {len(df)} 条")
 
-        report.append(f"\\n## 第三段物理分类分布")
+        report.append("\\n## 第三段物理分类分布")
         seg3_counts = df['seg3_category'].value_counts()
         for category, count in seg3_counts.items():
             percentage = count / len(df) * 100
             report.append(f"- {category}: {count} 条 ({percentage:.1f}%)")
 
-        report.append(f"\\n## 主要Shape类型 (前10个)")
+        report.append("\\n## 主要Shape类型 (前10个)")
         shape_counts = df['shape_v4'].value_counts().head(10)
         for shape, count in shape_counts.items():
             percentage = count / len(df) * 100
             report.append(f"- {shape}: {count} 条 ({percentage:.1f}%)")
 
-        report.append(f"\\n## 物理分类特征统计")
+        report.append("\\n## 物理分类特征统计")
         for category in ['ARC_UP', 'ARC_DOWN', 'FLAT', 'WAVE']:
             if category in seg3_counts:
                 group = df[df['seg3_category'] == category]

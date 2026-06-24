@@ -10,7 +10,6 @@ import os
 import logging
 from datetime import datetime
 from openpyxl import load_workbook
-from copy import deepcopy
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

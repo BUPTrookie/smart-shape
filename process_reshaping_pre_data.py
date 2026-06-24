@@ -8,7 +8,6 @@ import pandas as pd
 import os
 import sys
 import logging
-from datetime import datetime
 
 # 添加当前目录到路径以便导入rail_binning_algorithm
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -97,11 +96,11 @@ def extract_and_process_pre_data():
     gen_shape_counts = pre_data['Generated_Shape'].value_counts()
     gen_bin_counts = pre_data['Generated_BIN'].value_counts()
 
-    print(f"\n【Shape类型对比】")
+    print("\n【Shape类型对比】")
     print(f"参考Shape分布: {dict(ref_shape_counts)}")
     print(f"生成Shape分布: {dict(gen_shape_counts)}")
 
-    print(f"\n【BIN分类对比】")
+    print("\n【BIN分类对比】")
     print(f"参考BIN分布: {dict(ref_bin_counts)}")
     print(f"生成BIN分布: {dict(gen_bin_counts)}")
 
@@ -109,7 +108,7 @@ def extract_and_process_pre_data():
     shape_consistency = (pre_data['Shape'] == pre_data['Generated_Shape']).sum()
     bin_consistency = (pre_data['BIN'] == pre_data['Generated_BIN']).sum()
 
-    print(f"\n【一致性分析】")
+    print("\n【一致性分析】")
     print(f"Shape一致: {shape_consistency}/{len(pre_data)} ({shape_consistency/len(pre_data)*100:.2f}%)")
     print(f"BIN一致: {bin_consistency}/{len(pre_data)} ({bin_consistency/len(pre_data)*100:.2f}%)")
 
@@ -137,19 +136,19 @@ def generate_comparison_statistics(pre_data, ref_shape_counts, gen_shape_counts,
     print("=" * 40)
 
     # Shape转换矩阵
-    print(f"\n【Shape转换矩阵】")
+    print("\n【Shape转换矩阵】")
     shape_comparison = pd.crosstab(pre_data['Shape'], pre_data['Generated_Shape'],
                                    rownames=['参考Shape'], colnames=['生成Shape'])
     print(shape_comparison)
 
     # BIN转换矩阵
-    print(f"\n【BIN转换矩阵】")
+    print("\n【BIN转换矩阵】")
     bin_comparison = pd.crosstab(pre_data['BIN'], pre_data['Generated_BIN'],
                                  rownames=['参考BIN'], colnames=['生成BIN'])
     print(bin_comparison)
 
     # 主要不一致情况
-    print(f"\n【主要不一致情况】")
+    print("\n【主要不一致情况】")
     inconsistent_data = pre_data[
         (pre_data['Shape'] != pre_data['Generated_Shape']) |
         (pre_data['BIN'] != pre_data['Generated_BIN'])
@@ -166,7 +165,7 @@ def generate_comparison_statistics(pre_data, ref_shape_counts, gen_shape_counts,
         print(f"BIN不一致: {len(bin_inconsistent)} 行")
 
         # 显示前10个不一致样本
-        print(f"\n前10个不一致样本:")
+        print("\n前10个不一致样本:")
         display_cols = ['Barcode', 'Shape', 'Generated_Shape', 'BIN', 'Generated_BIN']
         available_cols = [col for col in display_cols if col in inconsistent_data.columns]
         print(inconsistent_data[available_cols].head(10).to_string())

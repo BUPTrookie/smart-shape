@@ -259,7 +259,7 @@ def main():
         else:
             print("[WARNING] 数据处理完成，但完整性验证有警告")
 
-        print(f"[INFO] 处理统计:")
+        print("[INFO] 处理统计:")
         print(f"   - 总数据行数: {len(processed_df)}")
 
         if 'Status' in processed_df.columns:
@@ -277,7 +277,7 @@ def main():
             print(f"[BACKUP] 备份文件: {backup_file}")
 
         # 验证数据转移效果
-        print(f"\n[VALIDATION] 数据转移验证:")
+        print("\n[VALIDATION] 数据转移验证:")
         pre_data = processed_df[processed_df['Status'] == 'Pre'].iloc[:3]
         for rs_field in ['RS1', 'RS2', 'RS3', 'RS4']:
             h0_val = pre_data[f'{rs_field}h0'].iloc[0]

@@ -12,10 +12,10 @@ def load_csv(file_path):
     """加载CSV文件"""
     try:
         return pd.read_csv(file_path, encoding='gbk')
-    except:
+    except Exception:
         try:
             return pd.read_csv(file_path, encoding='utf-8')
-        except:
+        except Exception:
             return pd.read_csv(file_path, encoding='utf-8-sig')
 
 def compare_shapes():
@@ -52,11 +52,11 @@ def compare_shapes():
 
         # 检查Shape列
         if 'Shape' not in ref_df.columns:
-            print(f"  参考文件没有Shape列")
+            print("  参考文件没有Shape列")
             continue
 
         if 'Shape' not in gen_df.columns:
-            print(f"  生成文件没有Shape列")
+            print("  生成文件没有Shape列")
             continue
 
         # 统计Shape分布

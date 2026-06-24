@@ -23,9 +23,8 @@ import logging
 import warnings
 import os
 from datetime import datetime
-from collections import Counter, defaultdict
-from typing import Dict, List, Tuple, Optional, Union
-from itertools import product
+from collections import Counter
+from typing import Dict, List, Tuple, Optional
 
 # sklearn相关
 from sklearn.linear_model import Ridge, ElasticNet
@@ -35,8 +34,6 @@ from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 
 # 可视化
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # 导入配置
 import rs_impact_config as config
@@ -239,7 +236,7 @@ class OutlierHandler:
 
                 handling_info[col] = {'n_outliers': int(n_outliers)}
 
-        self.logger.info(f"异常值处理完成")
+        self.logger.info("异常值处理完成")
         return df_clean, handling_info
 
 
@@ -892,7 +889,7 @@ class RSImpactAnalyzerV2:
         self.logger.info(f"{'RMSE<=0.01点位数':<30} {baseline['n_points_with_RMSE_le_01']:>15d} {improved['n_points_with_RMSE_le_01']:>15d} {improved['n_points_with_RMSE_le_01']-baseline['n_points_with_RMSE_le_01']:>+14d}")
 
         # 各点位RMSE对比
-        self.logger.info(f"\n各点位RMSE对比:")
+        self.logger.info("\n各点位RMSE对比:")
         self.logger.info(f"{'点位':<10} {'基线RMSE':>12} {'优化RMSE':>12} {'改进':>12}")
         self.logger.info("-" * 50)
 
@@ -946,7 +943,7 @@ class RSImpactAnalyzerV2:
             X_baseline, y, baseline_metrics = self.run_baseline()
 
             # 6. 运行优化模型
-            improved_metrics = self.run_optimized_model(X_baseline, y)
+            self.run_optimized_model(X_baseline, y)
 
             # 7. 对比结果
             self.compare_results()

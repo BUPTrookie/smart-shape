@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from collections import Counter
 import matplotlib
 import warnings
 
@@ -20,7 +19,7 @@ matplotlib.use('Agg')
 class V4ShapeVisualizer:
     def __init__(self):
         # 优先使用可配置阈值的结果文件
-    
+
         self.data_file = "test_v4_results.csv"
         print("使用默认阈值结果文件")
 
@@ -297,7 +296,7 @@ class V4ShapeVisualizer:
             if labels:
                 p_count = labels.count('P')
                 n_count = labels.count('N')
-                total = len(labels)
+                len(labels)
 
                 x = i
                 width = 0.35
@@ -449,12 +448,12 @@ class V4ShapeVisualizer:
 
     def print_statistics_report(self, df, shape_counts):
         """打印统计报告"""
-        print(f"\\nV4 Shape分类统计报告:")
+        print("\\nV4 Shape分类统计报告:")
         print("=" * 60)
         print(f"总数据量: {len(df)} 条")
         print(f"Shape类型数: {len(shape_counts)} 种")
 
-        print(f"\\n主要Shape分布 (前10个):")
+        print("\\n主要Shape分布 (前10个):")
         for i, (shape, count) in enumerate(shape_counts.head(10).items(), 1):
             percentage = count / len(df) * 100
             print(f"  {i:2d}. {shape}: {count:4d} 条 ({percentage:5.1f}%)")
@@ -476,7 +475,7 @@ class V4ShapeVisualizer:
                     name = 'UNKNOWN'
                 physical_counts[name] = physical_counts.get(name, 0) + 1
 
-        print(f"\\n第三段物理分类分布:")
+        print("\\n第三段物理分类分布:")
         for name, count in physical_counts.items():
             percentage = count / len(df) * 100
             print(f"  {name}: {count:4d} 条 ({percentage:5.1f}%)")
@@ -490,7 +489,7 @@ class V4ShapeVisualizer:
                     seg_name = f'段{i+1}'
                     segment_stats[seg_name][char] = segment_stats[seg_name].get(char, 0) + 1
 
-        print(f"\\n各段P/N分布:")
+        print("\\n各段P/N分布:")
         for seg_name, stats in segment_stats.items():
             p_count = stats.get('P', 0)
             n_count = stats.get('N', 0)

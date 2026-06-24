@@ -40,7 +40,7 @@ class DZFourSegmentValidator:
 
         print("=== DZ方向4段分类标签独立对比验证工具 ===")
         print(f"数据文件: {self.data_file_path}")
-        print(f"算法版本: 重构版核心算法")
+        print("算法版本: 重构版核心算法")
         print()
 
     def load_data(self) -> pd.DataFrame:
@@ -101,7 +101,7 @@ class DZFourSegmentValidator:
             try:
                 df_algorithm['FAI156'] = pd.to_numeric(df_reference['PreBIN'], errors='coerce')
                 df_algorithm['FAI156'] = df_algorithm['FAI156'].fillna(0.5)  # 填充默认值
-            except:
+            except Exception:
                 df_algorithm['FAI156'] = np.random.uniform(0.1, 0.7, len(df_reference))
         else:
             df_algorithm['FAI156'] = np.random.uniform(0.1, 0.7, len(df_reference))
@@ -226,7 +226,7 @@ class DZFourSegmentValidator:
         analysis['inconsistent_count'] = len(inconsistent_samples)
         analysis['inconsistent_rate'] = len(inconsistent_samples) / total_count * 100 if total_count > 0 else 0
 
-        print(f"分析完成")
+        print("分析完成")
         print(f"总体一致性: {analysis['overall_consistency']:.2f}%")
         print(f"不一致样本数: {analysis['inconsistent_count']}")
 
@@ -281,7 +281,7 @@ class DZFourSegmentValidator:
             segment_mismatch_count = len(df_comparison) - segment_match_count
             report_content += f"\n| 段{i} | {segment_consistency:.2f}% | {segment_match_count} | {segment_mismatch_count} |"
 
-        report_content += f"""
+        report_content += """
 
 ---
 
@@ -343,7 +343,7 @@ class DZFourSegmentValidator:
 
             report_content += f"- **段{i}**: {consistency:.2f}% - {status}\n"
 
-        report_content += f"""
+        report_content += """
 
 ---
 
