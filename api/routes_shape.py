@@ -6,29 +6,24 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from db.database import get_db
-from predictor import ImpactPredictor
 from shaping import plan_first, plan_next, simulate_shape
 
-from api.routes_predict import get_predictor
 from api.schemas import ShapePlanRequest, ShapeNextRequest, ShapeSimulateRequest
 
 router = APIRouter()
 
 
 @router.post("/shape/simulate")
-def shape_simulate(
-    req: ShapeSimulateRequest,
-    predictor: ImpactPredictor = Depends(get_predictor),
-    db: Session = Depends(get_db),
-) -> dict:
+def shape_simulate(req: ShapeSimulateRequest, db: Session = Depends(get_db)) -> dict:
     """
-    模式A：系统内模拟整形，最多 2 次。
+    模式A：案例匹配模拟整形，最多 2 次（兜底重试）。
 
-    输入来料 Pre 曲线 → search 历史最像案例取压头方案 → predict 效果 →
-    应用 Δ → 检查合格（max-min ≤ 0.1）；不合格则基于整形后曲线再走一次。
+    对来料 Pre 曲线，依次取历史最像的 2 个案例，复用其真实整形结果（post_curve）
+    作为效果评估，任一合格即成功。对应「最多整形 2 次」。
+
     返回总尝试次数、最终是否合格、最终 max-min、每次尝试详情。
     """
-    return simulate_shape(predictor, db, req.pre_curve, max_attempts=2)
+    return simulate_shape(db, req.pre_curve, max_attempts=2)
 
 
 @router.post("/shape/plan")
