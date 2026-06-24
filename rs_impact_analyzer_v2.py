@@ -78,10 +78,14 @@ class DataLoader:
         self.logger = logger
 
     def load_raw_data(self) -> pd.DataFrame:
-        """加载Excel原始数据"""
-        self.logger.info(f"正在加载数据文件: {config.INPUT_DATA_PATH}")
+        """加载原始数据（支持 .csv 与 .xlsx）"""
+        path = config.INPUT_DATA_PATH
+        self.logger.info(f"正在加载数据文件: {path}")
         try:
-            df = pd.read_excel(config.INPUT_DATA_PATH, sheet_name=config.SHEET_NAME)
+            if path.lower().endswith((".xlsx", ".xls")):
+                df = pd.read_excel(path, sheet_name=config.SHEET_NAME)
+            else:
+                df = pd.read_csv(path)
             self.logger.info(f"成功加载 {len(df)} 条记录")
             self.logger.info(f"数据列: {list(df.columns)[:20]}...")
             return df
@@ -600,56 +604,88 @@ class ModelTrainer:
 
     def select_best_model(self, X: pd.DataFrame, y: pd.DataFrame,
                          use_elasticnet: bool = False) -> Tuple:
-        """选择最佳模型和参数"""
+        """选择最佳模型和参数（scaler 塞进 Pipeline，每折 CV 独立 fit，杜绝泄露）"""
+        from sklearn.pipeline import Pipeline
+
         self.logger.info("选择最佳模型参数...")
 
-        X_scaled = self.scaler.fit_transform(X)
-        X_scaled = pd.DataFrame(X_scaled, columns=X.columns, index=X.index)
-
         if use_elasticnet:
-            # ElasticNet网格搜索
+            # ElasticNet 网格搜索（Pipeline 内步骤名 'model'）
             param_grid = {
-                'estimator__alpha': config.ELASTICNET_CONFIG['alpha_candidates'],
-                'estimator__l1_ratio': config.ELASTICNET_CONFIG['l1_ratio_candidates']
+                'model__estimator__alpha': config.ELASTICNET_CONFIG['alpha_candidates'],
+                'model__estimator__l1_ratio': config.ELASTICNET_CONFIG['l1_ratio_candidates'],
             }
             base_model = ElasticNet(random_state=config.RANDOM_STATE)
         else:
-            # Ridge网格搜索
-            param_grid = {
-                'estimator__alpha': config.ALPHA_CANDIDATES
-            }
+            # Ridge 网格搜索
+            param_grid = {'model__estimator__alpha': config.ALPHA_CANDIDATES}
             base_model = Ridge(random_state=config.RANDOM_STATE)
 
-        model = MultiOutputRegressor(base_model)
+        # Pipeline: scaler 在每折 CV 内独立 fit，避免全量 fit_transform 造成的数据泄露（审查 #1）
+        pipeline = Pipeline([
+            ('scaler', StandardScaler()),
+            ('model', MultiOutputRegressor(base_model)),
+        ])
 
-        # K折交叉验证
         kf = KFold(n_splits=config.N_FOLDS, shuffle=True, random_state=config.RANDOM_STATE)
-
-        # 网格搜索
         grid_search = GridSearchCV(
-            model, param_grid, cv=kf, scoring='r2', n_jobs=-1, verbose=1
+            pipeline, param_grid, cv=kf, scoring='r2', n_jobs=-1, verbose=1
         )
-        grid_search.fit(X_scaled, y)
+        grid_search.fit(X, y)  # 直接传原始 X，scaler 由 Pipeline 在每折内 fit
 
         self.logger.info(f"最佳参数: {grid_search.best_params_}")
-        self.logger.info(f"最佳R2得分: {grid_search.best_score_:.4f}")
+        self.logger.info(f"最佳CV R2: {grid_search.best_score_:.4f}")
 
         self.model = grid_search.best_estimator_
         self.best_params = grid_search.best_params_
 
-        return self.model, X_scaled, grid_search.best_score_
+        return self.model, grid_search.best_score_
 
-    def train_model(self, X: pd.DataFrame, y: pd.DataFrame,
+    def evaluate_on_holdout(self, X_test: pd.DataFrame, y_test: pd.DataFrame) -> Dict:
+        """在 hold-out 测试集上评估（该集未参与训练/选参，指标可信，审查 #1）"""
+        self.logger.info("在 hold-out 测试集上评估...")
+        y_pred = self.model.predict(X_test)
+
+        metrics: Dict = {}
+        r2_scores, rmse_scores = [], []
+        for i, col in enumerate(y_test.columns):
+            y_true = y_test.iloc[:, i].values
+            yp = y_pred[:, i]
+            r2 = r2_score(y_true, yp)
+            rmse = np.sqrt(mean_squared_error(y_true, yp))
+            metrics[col] = {'R2': r2, 'RMSE': rmse}
+            r2_scores.append(r2)
+            rmse_scores.append(rmse)
+
+        rmse_arr = np.array(rmse_scores)
+        n_le_01 = int((rmse_arr <= 0.01).sum())
+        metrics['global'] = {
+            'mean_R2': float(np.mean(r2_scores)),
+            'std_R2': float(np.std(r2_scores)),
+            'mean_RMSE': float(np.mean(rmse_scores)),
+            'std_RMSE': float(np.std(rmse_scores)),
+            'n_points_with_RMSE_le_01': n_le_01,
+            'pct_points_with_RMSE_le_01': float(n_le_01 / len(rmse_scores) * 100),
+        }
+        self.logger.info(f"hold-out 平均R2: {metrics['global']['mean_R2']:.4f}")
+        self.logger.info(f"hold-out 平均RMSE: {metrics['global']['mean_RMSE']:.6f}")
+        return metrics
+
+    def train_model(self, X_train: pd.DataFrame, y_train: pd.DataFrame,
+                   X_test: pd.DataFrame = None, y_test: pd.DataFrame = None,
                    use_elasticnet: bool = False) -> Dict:
-        """训练模型"""
+        """训练模型：Pipeline 选参（无泄露）+ hold-out 评估（若有 test）"""
         self.logger.info("开始模型训练...")
 
-        model, X_scaled, best_score = self.select_best_model(X, y, use_elasticnet)
+        model, best_score = self.select_best_model(X_train, y_train, use_elasticnet)
 
-        # 评估
-        metrics = self.evaluate_model(X_scaled, y)
+        if X_test is not None and y_test is not None:
+            metrics = self.evaluate_on_holdout(X_test, y_test)
+        else:
+            # 无 hold-out 时退回 CV 评估（仅供调试，不可用于结论）
+            metrics = self.evaluate_model(X_train, y_train)
 
-        return metrics, X_scaled
+        return metrics, best_score
 
     def evaluate_model(self, X: pd.DataFrame, y: pd.DataFrame, use_cv: bool = True) -> Dict:
         """评估模型性能（使用交叉验证）"""
@@ -810,65 +846,50 @@ class RSImpactAnalyzerV2:
         self.baseline_metrics = None
         self.improved_metrics = None
 
-    def run_baseline(self) -> Tuple[pd.DataFrame, pd.DataFrame, Dict]:
-        """运行基线模型"""
+    def run_baseline(self, X_train, X_test, y_train, y_test) -> Dict:
+        """运行基线模型（train 上 Pipeline 训练，test 上 hold-out 评估）"""
         self.logger.info("\n" + "="*80)
         self.logger.info("[阶段1] 运行基线模型")
         self.logger.info("="*80)
 
-        # 构造基线特征
-        X, y = self.feature_engineer.build_feature_matrix(
-            self.clean_data, use_kernel=False, use_position=True
+        metrics, _ = self.trainer.train_model(
+            X_train, y_train, X_test, y_test, use_elasticnet=False
         )
-
-        # 训练基线模型
-        metrics, X_scaled = self.trainer.train_model(X, y, use_elasticnet=False)
-
-        # 预测
-        y_pred = self.trainer.model.predict(X_scaled)
-
-        # 导出结果
         self.exporter.export_metrics(metrics, config.BASELINE_METRICS_PATH, "Baseline")
-        self.exporter.export_predictions(y, y_pred, self.clean_data, config.BASELINE_PREDICTIONS_PATH)
 
         self.baseline_metrics = metrics
-        return X, y, metrics
+        return metrics
 
-    def run_optimized_model(self, X_baseline, y) -> Dict:
-        """运行优化模型"""
+    def run_optimized_model(self, X_train, X_test, y_train, y_test) -> Dict:
+        """运行优化模型（距离核特征，与基线共用同一 train/test 划分）"""
         self.logger.info("\n" + "="*80)
-        self.logger.info("[阶段2] 运行优化模型")
+        self.logger.info("[阶段2] 运行优化模型（距离核特征）")
         self.logger.info("="*80)
 
-        # 1. 加入距离核特征
-        self.logger.info("\n[优化步骤1] 加入距离核特征")
-        X, y = self.feature_engineer.build_feature_matrix(
+        # 距离核特征在全量上构造后按 index 取，保证基线/优化同划分
+        X_kernel, _ = self.feature_engineer.build_feature_matrix(
             self.clean_data, use_kernel=True, use_position=False
         )
+        Xk_train = X_kernel.loc[X_train.index]
+        Xk_test = X_kernel.loc[X_test.index]
 
-        # 训练
-        metrics_kernel, X_scaled = self.trainer.train_model(X, y, use_elasticnet=False)
-        self.logger.info(f"加入核特征后 - 平均RMSE: {metrics_kernel['global']['mean_RMSE']:.6f}")
+        metrics_kernel, _ = self.trainer.train_model(
+            Xk_train, y_train, Xk_test, y_test, use_elasticnet=False
+        )
+        self.logger.info(f"距离核 - hold-out 平均RMSE: {metrics_kernel['global']['mean_RMSE']:.6f}")
 
-        # 2. 可选：按工况模式分模型（暂时跳过，因为实现较复杂）
-        # TODO: 实现工况模式分模型
-
-        # 3. 可选：ElasticNet
+        # 可选：ElasticNet（同一 hold-out 划分下比较）
         if config.OPTIMIZATION_CONFIG['use_elasticnet']:
-            self.logger.info("\n[优化步骤3] 使用ElasticNet")
-            metrics_en, _ = self.trainer.train_model(X, y, use_elasticnet=True)
-            self.logger.info(f"ElasticNet - 平均RMSE: {metrics_en['global']['mean_RMSE']:.6f}")
-
+            self.logger.info("\n[优化步骤] 使用ElasticNet")
+            metrics_en, _ = self.trainer.train_model(
+                Xk_train, y_train, Xk_test, y_test, use_elasticnet=True
+            )
+            self.logger.info(f"ElasticNet - hold-out 平均RMSE: {metrics_en['global']['mean_RMSE']:.6f}")
             if metrics_en['global']['mean_RMSE'] < metrics_kernel['global']['mean_RMSE']:
                 self.logger.info("ElasticNet表现更好，采用ElasticNet结果")
                 metrics_kernel = metrics_en
 
-        # 导出结果
         self.exporter.export_metrics(metrics_kernel, config.IMPROVED_METRICS_PATH, "Improved")
-
-        y_pred = self.trainer.model.predict(X_scaled)
-        self.exporter.export_predictions(y, y_pred, self.clean_data, config.IMPROVED_PREDICTIONS_PATH)
-
         self.improved_metrics = metrics_kernel
         return metrics_kernel
 
@@ -939,11 +960,24 @@ class RSImpactAnalyzerV2:
                 self.pattern_manager.patterns, config.PATTERNS_SUMMARY_PATH
             )
 
-            # 5. 运行基线
-            X_baseline, y, baseline_metrics = self.run_baseline()
+            # 5. 构造基线特征 + hold-out 划分（基线/优化共用同一划分，审查 #1）
+            from sklearn.model_selection import train_test_split
 
-            # 6. 运行优化模型
-            self.run_optimized_model(X_baseline, y)
+            X_baseline, y = self.feature_engineer.build_feature_matrix(
+                self.clean_data, use_kernel=False, use_position=True
+            )
+            X_train, X_test, y_train, y_test = train_test_split(
+                X_baseline, y, test_size=0.15, random_state=config.RANDOM_STATE
+            )
+            self.logger.info(
+                f"\n[hold-out 划分] 训练集 {len(X_train)} / 测试集 {len(X_test)}"
+            )
+
+            # 6. 运行基线（train 训练，test 评估）
+            self.run_baseline(X_train, X_test, y_train, y_test)
+
+            # 7. 运行优化模型（距离核，同一划分）
+            self.run_optimized_model(X_train, X_test, y_train, y_test)
 
             # 7. 对比结果
             self.compare_results()

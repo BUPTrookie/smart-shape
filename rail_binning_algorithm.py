@@ -296,6 +296,12 @@ class RailBinningCore:
                     elif fourth_char == 'N':
                         df.loc[idx, 'BIN'] = 'BIN18'
 
+        # 整体值优先：BINOK(<0.1)/BIN100(>0.8) 覆盖回 shape 分类（审查 #3）
+        # 否则 preprocess_data 赋的 BINOK/BIN100 会被上面的 shape 分类整列覆盖而丢失
+        if 'overall_value' in df.columns:
+            df.loc[df['overall_value'] < 0.1, 'BIN'] = 'BINOK'
+            df.loc[df['overall_value'] > 0.8, 'BIN'] = 'BIN100'
+
         logger.info("各段分类完成")
         return df
 

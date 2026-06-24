@@ -6,7 +6,6 @@ DZ方向4段分类标签独立对比验证工具
 """
 
 import pandas as pd
-import numpy as np
 import sys
 import os
 from datetime import datetime
@@ -96,25 +95,20 @@ class DZFourSegmentValidator:
         df_algorithm = pd.DataFrame()
 
         # 设置整体值（使用PreBIN作为整体值的代理）
-        if 'PreBIN' in df_reference.columns:
-            # 将PreBIN转换为数值，如果是分类字符串则映射为数值
-            try:
-                df_algorithm['FAI156'] = pd.to_numeric(df_reference['PreBIN'], errors='coerce')
-                df_algorithm['FAI156'] = df_algorithm['FAI156'].fillna(0.5)  # 填充默认值
-            except Exception:
-                df_algorithm['FAI156'] = np.random.uniform(0.1, 0.7, len(df_reference))
-        else:
-            df_algorithm['FAI156'] = np.random.uniform(0.1, 0.7, len(df_reference))
+        # 缺失或无法转换直接报错，绝不随机生成（审查 #4：造假会让一致性指标无意义）
+        if 'PreBIN' not in df_reference.columns:
+            raise ValueError("参考数据缺少 PreBIN 列，无法构造整体值 FAI156")
+        df_algorithm['FAI156'] = pd.to_numeric(df_reference['PreBIN'], errors='coerce')
+        if df_algorithm['FAI156'].isna().any():
+            raise ValueError("PreBIN 含无法转为数值的值，请检查参考数据")
 
         # 添加P1-P20测量点数据，直接使用参考数据中的P列
         for i in range(1, 21):
             col_name = f'P{i}'
 
-            if col_name in df_reference.columns:
-                df_algorithm[col_name] = df_reference[col_name].fillna(0.0)
-            else:
-                # 如果没有对应列，生成合理的测量值
-                df_algorithm[col_name] = np.random.normal(0, 0.05, len(df_reference))
+            if col_name not in df_reference.columns:
+                raise ValueError(f"参考数据缺少测量点列 {col_name}")
+            df_algorithm[col_name] = df_reference[col_name].fillna(0.0)
 
         print(f"准备完成 {len(df_algorithm)} 条算法输入数据")
         return df_algorithm

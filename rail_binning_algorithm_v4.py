@@ -451,119 +451,13 @@ class RailBinningCoreV4:
             # 数据预处理
             self.df_processed = self._calculate_least_squares_fit(self.df.copy())
 
-            # 应用MMM阈值规则进行预分类
-            bins = []
-            for idx, row in self.df_processed.iterrows():
-                lsd_fit_value = row.get('lsd_fit_value', np.nan)
-                if pd.notna(lsd_fit_value):
-                    if lsd_fit_value < self.mmm_threshold:
-                        bins.append('UNKNOWN')  # 先标记，后续处理
-                    elif lsd_fit_value >= 0.1:  # 简化的整体值检查
-                        bins.append('BIN100')
-                    else:
-                        bins.append('BINOK')
-                else:
-                    bins.append('UNKNOWN')
-
-            self.df_processed['BIN'] = bins
-
-            # 计算特征值
+            # 计算各段特征值（含段3物理分类 FLAT/ARC_UP/ARC_DOWN/WAVE）
             self.calculate_features()
 
-            # 对非MMM产品进行详细分类
-            non_mmm_mask = self.df_processed['lsd_fit_value'] >= self.mmm_threshold
-            non_mmm_data = self.df_processed[non_mmm_mask].copy()
-
-            if len(non_mmm_data) > 0:
-                # 段分类
-                shape_parts = []
-                for segment_idx in [1, 2, 4]:  # 跳过段3
-                    feature_col = f'segment_{segment_idx}_feature'
-                    threshold = self.segments[segment_idx].threshold
-
-                    labels = []
-                    for feature_value in non_mmm_data[feature_col]:
-                        if pd.isna(feature_value):
-                            labels.append('U')
-                        else:
-                            label = 'P' if feature_value >= threshold else 'N'
-                            labels.append(label)
-
-                    shape_parts.append(labels)
-                    non_mmm_data[f'segment_{segment_idx}_label'] = labels
-
-                # 为段3添加物理分类
-                seg3_physical_labels = []
-                for idx in non_mmm_data.index:
-                    category = non_mmm_data.at[idx, 'seg3_category']
-                    physical_to_label = {
-                        'ARC_UP': 'A',
-                        'ARC_DOWN': 'R',
-                        'FLAT': 'F',
-                        'WAVE': 'W',
-                        'UNKNOWN': 'U'
-                    }
-                    seg3_physical_labels.append(physical_to_label.get(category, 'U'))
-
-                shape_parts.insert(2, seg3_physical_labels)  # 插入段3
-
-                # 组合Shape
-                shapes = []
-                for i in range(len(non_mmm_data)):
-                    shape = ''.join([shape_parts[j][i] for j in range(4)])
-                    shapes.append(shape)
-
-                non_mmm_data['shape'] = shapes
-
-                # 基于Shape分配BIN（简化处理）
-                final_bins = []
-                for shape in non_mmm_data['shape']:
-                    # 这里需要建立新的Shape到BIN映射
-                    if 'PPPP' in shape or 'PPFA' in shape or 'PPFW' in shape:
-                        final_bins.append('BINOK')
-                    elif 'NNNN' in shape or 'NNFR' in shape or 'NNFW' in shape:
-                        final_bins.append('BIN100')
-                    else:
-                        final_bins.append('BINOK')  # 简化处理
-
-                non_mmm_data['BIN'] = final_bins
-
-                # 更新原数据
-                self.df_processed.loc[non_mmm_mask, 'BIN'] = final_bins
-                self.df_processed.loc[non_mmm_mask, 'shape'] = shapes
-
-            # 检查MMM模式并分配BIN17/BIN18
-            mmm_mask = self.df_processed['lsd_fit_value'] < self.mmm_threshold
-            mmm_data = self.df_processed[mmm_mask]
-
-            if len(mmm_data) > 0:
-                # 对MMM数据，基于段3物理分类进行最终分类
-                final_bins = []
-                shapes = []
-
-                for idx, row in mmm_data.iterrows():
-                    category = row.get('seg3_category', 'UNKNOWN')
-                    physical_to_label = {
-                        'ARC_UP': 'A',
-                        'ARC_DOWN': 'R',
-                        'FLAT': 'F',
-                        'WAVE': 'W',
-                        'UNKNOWN': 'U'
-                    }
-                    seg3_label = physical_to_label.get(category, 'U')
-
-                    # MM + 物理标签
-                    shape = 'MM' + seg3_label
-                    shapes.append(shape)
-
-                    # 分配BIN17/BIN18
-                    if seg3_label in ['A', 'P']:  # A或P都算Pass
-                        final_bins.append('BIN17')
-                    else:  # R, F, W, U都算Fail
-                        final_bins.append('BIN18')
-
-                self.df_processed.loc[mmm_mask, 'BIN'] = final_bins
-                self.df_processed.loc[mmm_mask, 'shape'] = shapes
+            # 复用已有正确分类链（审查 #2：原 process 用硬编码兜底，全 BINOK，BIN1-16 产不出）
+            self.classify_segments()    # 段1/2/4 P/N + 段3物理标签 → shape
+            self.apply_mmm_rules()      # MMM规则 → final_shape
+            self.classify_bins()        # 基于整体值+MMM → BIN(BINOK/BIN100/BIN17/18/UNKNOWN)
 
             logger.info(f"处理完成，生成 {len(self.df_processed)} 条完整记录")
             return self.df_processed

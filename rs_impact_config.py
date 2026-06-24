@@ -126,9 +126,14 @@ OPTIMIZATION_CONFIG = {
     'use_elasticnet': True,            # 是否使用ElasticNet（True: ElasticNet, False: Ridge）
 }
 
-# 点位X坐标（如果没有文件，使用等间距分布）
-# 假设P1-P20均匀分布在-70到70的范围内
-POINT_X_COORDS = {f'P{i}': -70.0 + (i-1) * (140.0/19.0) for i in range(1, 21)}
+# 点位X坐标（真实物理坐标，与 visualize_influence_coefficients_v4.py POINT_POSITIONS 一致）
+# 注意：距离核特征 exp(-d/λ) 的 d 必须用真实坐标，不能用等间距（否则在错误坐标系学习）
+POINT_X_COORDS = {
+    'P1': -70.99, 'P2': -68.98, 'P3': -65.66, 'P4': -62.12, 'P5': -59.46,
+    'P6': -55.33, 'P7': -51.19, 'P8': -47.06, 'P9': -42.93, 'P10': -32.25,
+    'P11': -27.20, 'P12': -21.60, 'P13': -15.99, 'P14': -10.38, 'P15': -4.77,
+    'P16': 0.84, 'P17': 6.44, 'P18': 12.05, 'P19': 17.66, 'P20': 22.28,
+}
 
 # 距离核特征配置
 KERNEL_FEATURES_CONFIG = {
