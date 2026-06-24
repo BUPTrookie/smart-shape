@@ -1,12 +1,25 @@
-# 忽略所有文件和文件夹
-*
+# ===== Python 缓存与字节码 =====
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
 
-# 但是不忽略这两个文件夹(请替换成你的文件夹名)
-!Binning/
-!Press Correlation analysis/
+# ===== 原始数据（本地管理，不纳入版本管理）=====
+Data/
 
-# 不忽略.gitignore文件本身
-!.gitignore
+# ===== 算法产物与图表（可由代码重新生成）=====
+Output/
+charts/
 
-# 不忽略README.md(如果需要保留)
-!README.md
+# ===== 根目录运行产生的临时结果 =====
+/processed_reshaping_data.csv
+/test_v4_results.csv
+/test_1209_DZ_result.csv
+utils/shape_comparison_summary.csv
+
+# ===== 日志 =====
+*.log
+
+# ===== 历史误产生的畸形垃圾文件（git扫描会报错，忽略；可手动删除）=====
+/DataX9600DZ*
+/nul
