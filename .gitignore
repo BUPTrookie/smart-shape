@@ -23,3 +23,6 @@ utils/shape_comparison_summary.csv
 # ===== 历史误产生的畸形垃圾文件（git扫描会报错，忽略；可手动删除）=====
 /DataX9600DZ*
 /nul
+
+# ===== 嵌入式 git 仓库（独立项目，不作为 submodule 跟踪）=====
+/smart_shape/

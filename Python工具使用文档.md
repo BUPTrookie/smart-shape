@@ -49,7 +49,7 @@ processor = RailBinningCore(product_type='X9600_DZ')
 1. **数据预处理**: 整体值分类 (BINOK/BIN100)
 2. **最小二乘拟合**: 计算P1-P14的拟合值
 3. **特征值计算**: 4段特征值 (端点差值法 + 直线度拟合法)
-4. **MMM标签判断**: 拟合值 < 0.005 时前3段记为MMM
+4. **MMM标签判断**: 拟合值 < 0.018 时前3段记为MMM
 5. **BIN分配**: MMM模式自动分配BIN17/BIN18
 
 #### 输入数据格式
@@ -205,15 +205,13 @@ thresholds = ProductConfigs.get_segment_thresholds('X9600_DZ')
 
 ## 测试和编码工具
 
-### `test_encoding.py`
+### `test_rail_binning.py`
 
-**功能**: 测试Windows环境下的中文编码问题
+**功能**: pytest 单元测试，覆盖核心算法的分段特征计算与分类逻辑。
 
 ```bash
-python test_encoding.py
+python test_rail_binning.py
 ```
-
-输出系统编码信息和算法功能测试结果。
 
 ---
 
@@ -288,7 +286,7 @@ thresholds = [
 ]
 
 # MMM标签阈值
-MMM_THRESHOLD = 0.005  # 最小二乘拟合值小于此值时触发MMM标签
+MMM_THRESHOLD = 0.018  # 最小二乘拟合值小于此值时触发MMM标签
 ```
 
 ### 分段配置
@@ -307,12 +305,17 @@ segments = {
 
 ```python
 BIN_RULES = {
+    # 整体值分类（2种）
     'BINOK': '整体值 < 0.1',
     'BIN100': '整体值 > 0.8',
-    'BIN17': 'MMM模式 + 第4段为P',
+    # DZ四段Shape映射（16种）：BIN1(PPPP) ~ BIN16(NNNN)，按4段Shape模式映射
+    'BIN1'~'BIN16': 'Shape 模式 → BIN，详见 bin_categories.DZ_SHAPE_BINS',
+    # MMM扩展分类（2种）
+    'BIN17': 'MMM模式（最小二乘拟合值<0.018）+ 第4段为P',
     'BIN18': 'MMM模式 + 第4段为N',
-    'UNKNOWN': '其他情况'
+    'UNKNOWN': '未匹配到任何规则'
 }
+# 注：共计 20 种 BIN（2 整体值 + 16 Shape + 2 MMM），UNKNOWN 为兜底
 ```
 
 ---

@@ -17,9 +17,9 @@ phi(h, lambda)_j = RS_hZ * exp(-d_{h,j} / lambda)
 ```
 
 **实现**：
-- 为每个压头（RS1-RS4）和多个尺度（lambda = [5, 10, 20, 40]）构造核特征
+- 为每个压头（RS1-RS4）和多个尺度（lambda = [3, 7, 15, 30, 60]）构造核特征
 - 采用投影方式压缩维度：将核函数投影到4个分段（P1-4, P5-8, P9-16, P17-20）
-- 特征数：4压头 × 4尺度 × 4分段 = 64个特征
+- 特征数：4压头 × 5尺度 × 4分段 = 80个特征
 
 ### 2. 工况模式分模型（Pattern-based Models）
 
@@ -84,6 +84,9 @@ python rs_impact_analyzer_v2.py
 
 ```python
 # 优化策略开关
+# 注：以下为「启用核特征优化」时的示例值。rs_impact_config.py 中实际默认为：
+#   use_kernel_features=False（默认走 26 特征位置桶方案，核特征为可选开启项）、
+#   use_pattern_models=True、use_outlier_handling=True、use_elasticnet=True。
 OPTIMIZATION_CONFIG = {
     'use_kernel_features': True,      # 是否使用距离核特征
     'use_pattern_models': True,        # 是否按工况模式分模型
@@ -98,7 +101,7 @@ POINT_X_COORDS = {
 
 # 距离核特征配置
 KERNEL_FEATURES_CONFIG = {
-    'lambdas': [5.0, 10.0, 20.0, 40.0],  # 距离衰减尺度
+    'lambdas': [3.0, 7.0, 15.0, 30.0, 60.0],  # 距离衰减尺度（5个尺度）
     'segments': [...],                     # 分段定义
     'use_projection': True,                # 是否使用投影压缩
 }
@@ -129,7 +132,7 @@ OUTLIER_CONFIG = {
 
 ### 优化模型（+距离核特征）
 
-- **特征数**：77个（64核 + 7Pre + 6交互）
+- **特征数**：93个（80核 + 7Pre + 6交互）
 - **平均R2**：0.9225 ± 0.0724
 - **平均RMSE**：0.010416 ± 0.006361
 - **RMSE<=0.01点位数**：11/20 (55.0%)
@@ -213,10 +216,10 @@ Pre/Post配对 → 2567对样本
     ↓
 ┌─────────────────────────────┐
 │ 优化模型                     │
-│ - 距离核特征 (64个)          │
+│ - 距离核特征 (80个)          │
 │ - Pre特征 (7个)              │
 │ - 交互特征 (6个)             │
-│ - 总计: 77特征               │
+│ - 总计: 93特征               │
 │ - 模型: Ridge/ElasticNet     │
 └─────────────────────────────┘
     ↓

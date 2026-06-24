@@ -18,8 +18,8 @@
 ### 3. 输出文件变化
 
 #### 评估指标
-- `metrics_train.json`: 训练集评估指标
-- `metrics_test.json`: 测试集评估指标
+- `model_metrics_train.json`: 训练集评估指标
+- `model_metrics_test.json`: 测试集评估指标
 
 #### 预测结果
 - `predictions_train.csv`: 训练集预测结果
@@ -132,6 +132,8 @@ RANDOM_STATE = 42  # 随机种子,确保可复现
 ```
 
 ## 输出示例
+
+> 以下样本数与性能指标为**占位示例**，实际值随数据源 `Data/total_final_processed.xlsx` 变化（当前数据约 2567 对配对样本）。工件按 `Barcode` 列配对 Pre/Post。
 
 ```
 [1/7] 数据加载与Pre/Post配对
