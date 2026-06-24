@@ -84,10 +84,14 @@ class DataLoader:
         self.logger = logger
 
     def load_raw_data(self) -> pd.DataFrame:
-        """加载Excel原始数据"""
-        self.logger.info(f"正在加载数据文件: {config.INPUT_DATA_PATH}")
+        """加载原始数据（支持 .csv 与 .xlsx）。"""
+        path = config.INPUT_DATA_PATH
+        self.logger.info(f"正在加载数据文件: {path}")
         try:
-            df = pd.read_excel(config.INPUT_DATA_PATH, sheet_name=config.SHEET_NAME)
+            if path.lower().endswith((".xlsx", ".xls")):
+                df = pd.read_excel(path, sheet_name=config.SHEET_NAME)
+            else:
+                df = pd.read_csv(path)
             self.logger.info(f"成功加载 {len(df)} 条记录")
             self.logger.info(f"数据列: {list(df.columns)}")
             return df

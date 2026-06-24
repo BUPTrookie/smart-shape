@@ -14,8 +14,8 @@
 import os
 
 # ==================== 路径配置 ====================
-# 输入数据路径（修改为你的实际路径）
-INPUT_DATA_PATH = "Data/total_final_processed.xlsx"
+# 输入数据路径（支持 .csv 与 .xlsx）
+INPUT_DATA_PATH = "Data/total.csv"
 
 # RSX统计文件路径（如果有的话，留空则从主数据自动提取）
 RSX_STATS_FILE = "Output/RS_analysis/rs_summary.csv"  # 或者 "" 禁用
