@@ -11,27 +11,15 @@ import sys
 import os
 from datetime import datetime
 
-# 设置编码处理
+# 设置编码处理（用 reconfigure 而非 detach，避免破坏 pytest 等工具的 stdout capture）
 if sys.platform == 'win32':
-    import codecs
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
-
-try:
-    from rail_binning_algorithm import RailBinningCore
-except ImportError:
     try:
-        # 尝试从带版本的文件导入
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("rail_binning_algorithm",
-                                                      os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                                 "rail_binning_algorithm_v2_20251214.py"))
-        rail_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(rail_module)
-        RailBinningCore = rail_module.RailBinningCore
-    except ImportError:
-        print("错误: 无法找到rail_binning_algorithm模块")
-        sys.exit(1)
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+from rail_binning_algorithm import RailBinningCore
 
 class DZFourSegmentValidator:
     """DZ方向4段分类标签验证器"""

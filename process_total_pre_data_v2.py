@@ -13,7 +13,7 @@ from datetime import datetime
 # 添加当前目录到路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from rail_binning_algorithm_v2_20251214 import binning_algorithm_v2
+from rail_binning_algorithm import RailBinningCore
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -76,13 +76,14 @@ def process_total_pre_data():
     dz_data.to_csv(temp_file, index=False)
     logger.info(f"已保存提取的DZ数据到: {temp_file}")
 
-    # 5. 使用DZ算法v2处理
-    logger.info("开始使用DZ算法v2_20251214处理数据...")
+    # 5. 使用RailBinningCore(DZ)处理
+    logger.info("开始使用RailBinningCore(DZ)处理数据...")
     try:
-        result_df = binning_algorithm_v2(temp_file, "X9600", "DZ")
-        logger.info(f"DZ算法v2处理完成，得到 {len(result_df)} 行结果")
+        core = RailBinningCore("X9600_DZ")
+        result_df = core.process(dz_data)
+        logger.info(f"算法处理完成，得到 {len(result_df)} 行结果")
     except Exception as e:
-        logger.error(f"DZ算法v2处理失败: {e}")
+        logger.error(f"算法处理失败: {e}")
         return
 
     # 6. 合并结果与原始数据
