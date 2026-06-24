@@ -109,6 +109,14 @@ METRICS_JSON_PATH = os.path.join(OUTPUT_DIR, "model_metrics.json")
 EXPORT_PREDICTIONS = True
 PREDICTIONS_CSV_PATH = os.path.join(OUTPUT_DIR, "predictions.csv")
 
+# 是否持久化模型（供在线推理服务加载，阶段1新增）
+EXPORT_MODEL = True
+MODEL_DIR = os.path.join(OUTPUT_DIR, "models")
+os.makedirs(MODEL_DIR, exist_ok=True)
+MODEL_PATH = os.path.join(MODEL_DIR, "model.pkl")
+SCALER_PATH = os.path.join(MODEL_DIR, "scaler.pkl")
+FEATURE_NAMES_PATH = os.path.join(MODEL_DIR, "feature_names.json")
+
 # ==================== RMSE优化配置 ====================
 # 优化策略开关
 OPTIMIZATION_CONFIG = {

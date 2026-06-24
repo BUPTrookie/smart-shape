@@ -33,6 +33,7 @@ from sklearn.multioutput import MultiOutputRegressor
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
+import joblib
 
 # 可视化
 
@@ -736,6 +737,36 @@ class ResultExporter:
         train_df.to_csv(output_path, index=False, encoding="utf-8-sig")
         self.logger.info("训练数据导出完成")
 
+    def export_model(
+        self,
+        model,
+        scaler,
+        feature_names: List[str],
+        model_path: str,
+        scaler_path: str,
+        feature_names_path: str,
+    ):
+        """
+        持久化训练好的模型与scaler，供在线推理服务加载（阶段1新增）。
+
+        在线推理必须用训练时同一份 scaler 和特征顺序，否则预测错位，
+        因此三者一起持久化。
+
+        参数:
+            model: 训练好的多输出回归模型
+            scaler: 训练时 fit 的 StandardScaler
+            feature_names: 特征名列表（推理时按此顺序构造特征）
+            model_path/scaler_path/feature_names_path: 输出路径
+        """
+        self.logger.info(f"持久化模型到: {model_path}")
+        joblib.dump(model, model_path)
+        joblib.dump(scaler, scaler_path)
+        with open(feature_names_path, "w", encoding="utf-8") as f:
+            json.dump(feature_names, f, ensure_ascii=False, indent=2)
+        self.logger.info(
+            f"模型持久化完成: {model_path}, {scaler_path}, {feature_names_path}"
+        )
+
 
 class RSImpactAnalyzer:
     """整形压头影响量化分析主类"""
@@ -931,6 +962,17 @@ class RSImpactAnalyzer:
                         test_predictions_path,
                         "测试集",
                     )
+
+            # 持久化模型（供在线推理服务加载，阶段1新增）
+            if config.EXPORT_MODEL:
+                self.exporter.export_model(
+                    self.trainer.model,
+                    self.trainer.scaler,
+                    feature_names,
+                    config.MODEL_PATH,
+                    config.SCALER_PATH,
+                    config.FEATURE_NAMES_PATH,
+                )
 
             # 8. 生成报告
             self.logger.info("\n[8/8] 生成分析报告")
