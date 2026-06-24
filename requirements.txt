@@ -1,0 +1,23 @@
+# X9600 铁路产品整形加工数据分析 — Python 依赖
+# 安装：pip install -r requirements.txt
+# 建议 Python >= 3.9，并在虚拟环境(venv/conda)中安装
+
+# 数值计算与数据处理
+numpy==2.3.4
+pandas==2.3.3
+
+# Excel 读取（.xlsx）
+openpyxl==3.1.5
+
+# 科学计算（stats / signal）
+scipy==1.16.3
+
+# 机器学习（Ridge / ElasticNet / 交叉验证）
+scikit-learn==1.7.2
+
+# 可视化
+matplotlib==3.10.7
+seaborn==0.13.2
+
+# 单元测试
+pytest==9.0.2
