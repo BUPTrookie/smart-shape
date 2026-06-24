@@ -21,3 +21,11 @@ seaborn==0.13.2
 
 # 单元测试
 pytest==9.0.2
+
+# 在线服务（FastAPI + DB，阶段4-5 新增）
+fastapi==0.138.0
+uvicorn==0.24.0
+sqlalchemy==2.0.44
+pydantic==2.12.5
+joblib==1.5.2
+httpx==0.28.1  # FastAPI TestClient 用，仅测试需要

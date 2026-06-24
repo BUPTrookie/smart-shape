@@ -41,6 +41,34 @@ RailBinningCore('X9600_DZ').process(pd.read_csv('Data/X9600DZ/data.csv'))"
 python rs_impact_analyzer.py
 ```
 
+## 在线服务（FastAPI + DB）
+
+把训练好的压头影响模型包装为 HTTP 服务，实时预测整形变化量（参考 smart_shape 的在线服务流程，用 FastAPI + 数据库重写）。
+
+**三步启动：**
+
+```bash
+# 1. 训练并持久化模型（生成 model.pkl/scaler.pkl/feature_names.json）
+python rs_impact_analyzer.py
+
+# 2. 初始化数据库（建表 + 登记模型版本）
+python -m db.init_db
+
+# 3. 启动在线服务（交互式文档见 http://localhost:8000/docs）
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**API：**
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/predict` | 输入压头参数 + Pre 曲线，返回 20 点位 Δ 预测 |
+| GET | `/health` | 健康检查 + 当前模型版本 |
+| GET | `/history?limit=N` | 最近 N 条预测记录及反馈状态 |
+| POST | `/feedback` | 回写实际整形结果，形成闭环 |
+
+**关键文件：** `predictor.py`（模型常驻推理）、`app.py`（FastAPI 入口）、`api/`（路由+Pydantic）、`db/`（SQLAlchemy+SQLite，4张表）。
+
 ## 目录结构
 
 ```
@@ -52,6 +80,11 @@ Code/
 ├── utils/                       # 数据处理与可视化工具
 ├── Binning/                     # 早期分箱与分组脚本
 ├── docs/                        # 算法文档
+├── app.py                       # 在线服务入口（FastAPI）
+├── predictor.py                 # 推理模块（模型常驻）
+├── api/                         # 路由与 Pydantic 模型
+├── db/                          # SQLAlchemy + SQLite（4张表）
+├── paths.py                     # 统一路径管理
 ├── Data/                        # 原始数据（不入 git，本地管理）
 ├── Output/                      # 算法产物（不入 git，可重新生成）
 └── charts/                      # 生成的图表（不入 git）
