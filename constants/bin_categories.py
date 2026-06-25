@@ -6,7 +6,7 @@ BIN分类定义
 
 DZ四段分类：每段2种标签(P/N)，共2^4=16种基础标签
 加上扩展标签：BINOK, BIN100, BIN17, BIN18
-总计：20种BIN分类
+总计：21种BIN分类（3 基础 + 16 四段 + 2 MMM；UNKNOWN 为兜底默认值，不计入）
 """
 
 from typing import Dict, List
@@ -24,7 +24,7 @@ class BinCategories:
         # 3段P，1段N
         'PPPN': 'BIN2',   # 前三段通过，末段不通过
         'PPNP': 'BIN3',   # 前两段和末段通过，第三段不通过
-        'PNPP': 'BIN4',   # 首段不通过，后三段通过
+        'PNPP': 'BIN4',   # 第二段不通过，其余三段通过
         'NPPP': 'BIN5',   # 首段不通过，后三段通过
         # 2段P，2段N
         'PPNN': 'BIN6',   # 前两段通过，后两段不通过
@@ -58,7 +58,7 @@ class BinCategories:
         'BIN1': 'PPPP - 四段全部通过',
         'BIN2': 'PPPN - 前三段通过，末段不通过',
         'BIN3': 'PPNP - 前两段和末段通过，第三段不通过',
-        'BIN4': 'PNPP - 首段不通过，后三段通过',
+        'BIN4': 'PNPP - 第二段不通过，其余三段通过',
         'BIN5': 'NPPP - 首段不通过，后三段通过',
         'BIN6': 'PPNN - 前两段通过，后两段不通过',
         'BIN7': 'PNPN - 第一、三段通过，第二、四段不通过',

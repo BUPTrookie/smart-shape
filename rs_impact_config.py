@@ -13,15 +13,19 @@
 
 import os
 
+from paths import DATA_DIR, OUTPUT_DIR as BASE_OUTPUT_DIR
+
 # ==================== 路径配置 ====================
+# 所有路径经 paths.py 锚定到项目根（绝对路径），换工作目录（cd .. && python ...）
+# 也能正确定位，避免相对路径 "Data/total.csv" 在非根目录运行时找不到。
 # 输入数据路径（支持 .csv 与 .xlsx）
-INPUT_DATA_PATH = "Data/total.csv"
+INPUT_DATA_PATH = str(DATA_DIR / "total.csv")
 
 # RSX统计文件路径（如果有的话，留空则从主数据自动提取）
-RSX_STATS_FILE = "Output/RS_analysis/rs_summary.csv"  # 或者 "" 禁用
+RSX_STATS_FILE = str(BASE_OUTPUT_DIR / "RS_analysis" / "rs_summary.csv")  # 或者 "" 禁用
 
 # 输出目录
-OUTPUT_DIR = "Output/RS_impact_analysis"
+OUTPUT_DIR = str(BASE_OUTPUT_DIR / "RS_impact_analysis")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # 影响系数输出文件

@@ -59,7 +59,9 @@ class ImpactPredictor:
         arr = np.array([float(pre_curve[f"P{i}"]) for i in range(1, 21)], dtype=float)
         return {
             "pre_mean": float(arr.mean()),
-            "pre_std": float(arr.std()),
+            # ddof=1 与训练侧 FeatureEngineer(pandas std 默认 ddof=1) 对齐；
+            # numpy 默认 ddof=0 会使推理 std 偏小 ~2.5%，标准化后该维偏大。
+            "pre_std": float(arr.std(ddof=1)),
             "pre_slope": float(arr[-1] - arr[0]),
             "pre_seg1_mean": float(arr[0:4].mean()),  # P1-P4
             "pre_seg2_mean": float(arr[4:8].mean()),  # P5-P8

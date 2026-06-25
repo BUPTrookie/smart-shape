@@ -32,6 +32,9 @@ def test_pre_features_values():
     # 段均值：seg1=P1-P4 索引 0..3
     assert math.isclose(feats["pre_seg1_mean"], sum(arr[0:4]) / 4, abs_tol=1e-12)
     assert math.isclose(feats["pre_seg4_mean"], sum(arr[16:20]) / 4, abs_tol=1e-12)
+    # pre_std 必须与训练侧 pandas std(ddof=1) 一致，否则推理特征错位
+    import statistics
+    assert math.isclose(feats["pre_std"], statistics.pstdev(arr) * (20 / 19) ** 0.5, abs_tol=1e-12)
 
 
 @pytest.mark.skipif(
