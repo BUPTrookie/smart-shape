@@ -39,3 +39,7 @@ class ShapePlanRequest(BaseModel):
 
 class ShapeNextRequest(BaseModel):
     prediction_id: int
+
+
+class ShapeGenerateRequest(BaseModel):
+    pre_curve: dict[str, float]

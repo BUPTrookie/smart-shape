@@ -1,4 +1,4 @@
-"""整形编排路由（多层策略 + 兜底重试）。"""
+"""整形编排路由（多层策略 + 兜底重试 + 方案生成）。"""
 
 from __future__ import annotations
 
@@ -6,9 +6,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from db.database import get_db
+from planner import generate_plan
+from predictor import ImpactPredictor
 from shaping import plan_first, plan_next, simulate_shape
 
-from api.schemas import ShapePlanRequest, ShapeNextRequest, ShapeSimulateRequest
+from api.routes_predict import get_predictor
+from api.schemas import (
+    ShapeGenerateRequest,
+    ShapePlanRequest,
+    ShapeNextRequest,
+    ShapeSimulateRequest,
+)
 
 router = APIRouter()
 
@@ -46,3 +54,18 @@ def shape_next(req: ShapeNextRequest, db: Session = Depends(get_db)) -> dict:
         return plan_next(db, req.prediction_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.post("/shape/generate")
+def shape_generate(
+    req: ShapeGenerateRequest,
+    predictor: ImpactPredictor = Depends(get_predictor),
+) -> dict:
+    """
+    模式C：model 反推最优压头参数（整形量计算）。
+
+    给定来料 Pre，用压头影响模型评估候选方案效果，坐标下降搜索使预测整形后
+    曲线合格（max-min ≤ 0.1）的 rs_params。返回最优压头参数 + 预测 Post 效果。
+    与模式A（案例匹配复用历史）互补：此处由模型主动计算方案。
+    """
+    return generate_plan(predictor, req.pre_curve)
