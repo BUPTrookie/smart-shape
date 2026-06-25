@@ -106,4 +106,4 @@ python -m scripts.dz_four_segment_validation  # 4 段分类标签验证
 
 `Data/` 包含汇总数据（2025-11-26 到 2025-12-01）及各方向（DZ/DY/BZ/BY）的单向数据。汇总数据与单向 DZ 数据格式不同，分别用对应脚本处理。详见各 `utils/README*.md`。
 
-> 参考：`X9600Rail Binning Algorithm Flow v1.2.251119.pdf`（算法流程权威说明）。
+> 参考：`X9600Rail Binning Algorithm Flow v1.2.251119.pdf`（算法流程权威说明，本地保留、不入库）。

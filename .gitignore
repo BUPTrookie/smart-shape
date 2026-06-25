@@ -31,3 +31,9 @@ utils/shape_comparison_summary.csv
 
 # ===== v2 探索版（保留本地历史，不入版本管理；生产用 v1）=====
 /rs_impact_analyzer_v2.py
+
+# ===== 工具配置/规格模板（非项目代码，本地保留）=====
+.spec-workflow/
+
+# ===== 大体量参考文档（本地保留，不入库）=====
+/X9600Rail*.pdf
