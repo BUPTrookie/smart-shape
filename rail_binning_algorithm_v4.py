@@ -71,9 +71,12 @@ class RailBinningCoreV4:
         logger.info(f"阈值已更新为: {thresholds}")
 
     def load_data(self, file_path: str) -> pd.DataFrame:
-        """加载Excel数据"""
+        """加载数据（支持 .csv 与 .xlsx）"""
         try:
-            self.df = pd.read_excel(file_path)
+            if str(file_path).lower().endswith(('.xlsx', '.xls')):
+                self.df = pd.read_excel(file_path)
+            else:
+                self.df = pd.read_csv(file_path)
             logger.info(f"成功加载数据: {len(self.df)} 条记录")
             return self.df
         except Exception as e:
@@ -105,7 +108,9 @@ class RailBinningCoreV4:
         x_values = np.arange(1, 15)  # x = 1, 2, ..., 14
 
         for idx, row in df.iterrows():
-            y_values = row[p_columns].values
+            # iterrows 返回的行是混合 dtype 的 Series，row[p_columns].values 是 object
+            # 数组(即便各列都是 float)，np.isnan 会抛 "not supported"。强制转 float。
+            y_values = pd.to_numeric(row[p_columns], errors="coerce").to_numpy(dtype=float)
 
             # 去除NaN值进行拟合
             valid_indices = ~np.isnan(y_values)
@@ -448,6 +453,13 @@ class RailBinningCoreV4:
 
             logger.info(f"开始处理 {self.rail_type} 数据，共 {len(self.df)} 条记录")
 
+            # 数值列强制转 float：total.csv 的 P 列偶有非数值串(空串/异常)导致整列 object，
+            # 后续 np.isnan/np.std 会抛 "ufunc 'isnan' not supported"。coerce 统一兜底。
+            numeric_cols = [c for c in [f"P{i}" for i in range(1, 21)] + ["FAI156"]
+                            if c in self.df.columns]
+            for col in numeric_cols:
+                self.df[col] = pd.to_numeric(self.df[col], errors="coerce")
+
             # 数据预处理
             self.df_processed = self._calculate_least_squares_fit(self.df.copy())
 
@@ -528,8 +540,8 @@ def main():
         # 更新阈值 [段1, 段2, 段3, 段4]
         processor.update_thresholds([0, 0, 0, 0])  # 段3使用物理分类，阈值设为0
 
-        # 处理数据
-        result = processor.process(file_path="Data/total_final_processed.xlsx")
+        # 处理数据（canonical 数据源 total.csv）
+        result = processor.process(file_path="Data/total.csv")
 
         # 获取统计信息
         stats = processor.get_statistics()

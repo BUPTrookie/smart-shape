@@ -35,9 +35,9 @@ class DZBinningVisualizer:
         初始化可视化器
 
         Args:
-            data_file_path: 数据文件路径，默认为Data/total_final_processed.xlsx
+            data_file_path: 数据文件路径，默认为Data/total.csv（canonical 数据源）
         """
-        self.data_file_path = data_file_path or 'Data/total_final_processed.xlsx'
+        self.data_file_path = data_file_path or 'Data/total.csv'
         self.output_dir = 'Output/dz_visualization'
         self.data = None
 
@@ -46,8 +46,11 @@ class DZBinningVisualizer:
         print("正在加载和处理数据...")
 
         try:
-            # 读取Excel文件
-            df = pd.read_excel(self.data_file_path, sheet_name='Reshaping')
+            # 读取数据（支持 .csv 与 .xlsx；xlsx 取 Reshaping 表）
+            if str(self.data_file_path).lower().endswith(('.xlsx', '.xls')):
+                df = pd.read_excel(self.data_file_path, sheet_name='Reshaping')
+            else:
+                df = pd.read_csv(self.data_file_path)
             print(f"原始数据: {len(df)} 条记录")
 
             # 筛选Pre状态数据
@@ -57,6 +60,9 @@ class DZBinningVisualizer:
             else:
                 print("警告: 未找到Status列，使用所有数据")
                 original_data = df.copy()
+
+            # 记录加载的 Pre 数据（create_summary_report 引用 self.data，原未赋值→len(None) 崩溃）
+            self.data = original_data
 
             # 保存原始参考数据（数据源）
             self.reference_data = original_data.copy()

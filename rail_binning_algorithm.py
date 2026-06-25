@@ -78,11 +78,18 @@ class RailBinningCore:
         # 获取整体值字段
         overall_field = FieldDefinitions.get_overall_field(self.product_type)
 
+        # 数值列强制转 float：total.csv 的 P 列偶有非数值串导致整列 object，
+        # 后续计算(np.isnan/拟合)会报错。coerce 统一兜底，与 V4 保持一致。
+        numeric_cols = [c for c in [f'P{i}' for i in range(1, 21)] + [overall_field]
+                        if c in df.columns]
+        for col in numeric_cols:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
         if overall_field not in df.columns:
             logger.warning(f"未找到整体值字段 {overall_field}")
             df['overall_value'] = 0.0
         else:
-            df['overall_value'] = df[overall_field].astype(float)
+            df['overall_value'] = df[overall_field].fillna(0.0)
 
         # 根据整体值进行BIN分类
         df['BIN'] = df['overall_value'].apply(BinCategories.classify_by_overall_value)

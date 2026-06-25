@@ -1161,7 +1161,8 @@ def main():
 
     # 创建分析器并运行
     analyzer = RSImpactAnalyzer()
-    analyzer.run_full_pipeline(test_size=0.2)  # 25%测试集,75%训练集
+    # 85/15 划分（与结题报告一致：2567 对 → 训练 2181 / 测试 386，R²≈0.88）
+    analyzer.run_full_pipeline(test_size=0.15)
 
     print("\n程序执行完毕！请查看日志和输出文件。")
 

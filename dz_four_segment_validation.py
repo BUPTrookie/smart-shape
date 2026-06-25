@@ -28,11 +28,11 @@ class DZFourSegmentValidator:
         初始化验证器
 
         Args:
-            data_file_path: 数据文件路径，默认为Data/total_final_processed.xlsx
+            data_file_path: 数据文件路径，默认为Data/total.csv（canonical 数据源）
         """
         if data_file_path is None:
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            data_file_path = os.path.join(current_dir, "Data", "total_final_processed.xlsx")
+            data_file_path = os.path.join(current_dir, "Data", "total.csv")
 
         self.data_file_path = data_file_path
         self.processor = RailBinningCore('X9600_DZ')
@@ -52,8 +52,11 @@ class DZFourSegmentValidator:
         try:
             print("正在加载参考数据...")
 
-            # 读取Excel文件
-            df = pd.read_excel(self.data_file_path, sheet_name='Reshaping')
+            # 读取数据（支持 .csv 与 .xlsx；xlsx 取 Reshaping 表）
+            if str(self.data_file_path).lower().endswith(('.xlsx', '.xls')):
+                df = pd.read_excel(self.data_file_path, sheet_name='Reshaping')
+            else:
+                df = pd.read_csv(self.data_file_path)
             print(f"原始数据: {len(df)} 条记录")
 
             # 筛选Pre状态数据
@@ -94,15 +97,20 @@ class DZFourSegmentValidator:
         # 创建算法所需的数据格式
         df_algorithm = pd.DataFrame()
 
-        # 设置整体值（使用PreBIN作为整体值的代理）
-        # 缺失或无法转换直接报错，绝不随机生成（审查 #4：造假会让一致性指标无意义）
-        if 'PreBIN' not in df_reference.columns:
-            raise ValueError("参考数据缺少 PreBIN 列，无法构造整体值 FAI156")
-        df_algorithm['FAI156'] = pd.to_numeric(df_reference['PreBIN'], errors='coerce')
-        if df_algorithm['FAI156'].isna().any():
-            raise ValueError("PreBIN 含无法转为数值的值，请检查参考数据")
+        # 设置整体值：优先用参考数据中真实的 FAI156（数值）；
+        # 缺失时回退 PreBIN。绝不随机生成（审查 #4：造假会让一致性指标无意义）。
+        # 注意：total.csv 的 PreBIN 是分类标签(如 BIN1)非数值，不能当整体值用，
+        # 必须用真实的 FAI156 列。
+        if 'FAI156' in df_reference.columns:
+            df_algorithm['FAI156'] = pd.to_numeric(df_reference['FAI156'], errors='coerce')
+        elif 'PreBIN' in df_reference.columns:
+            df_algorithm['FAI156'] = pd.to_numeric(df_reference['PreBIN'], errors='coerce')
+        else:
+            raise ValueError("参考数据缺少 FAI156/PreBIN 列，无法构造整体值")
+        if df_algorithm['FAI156'].isna().all():
+            raise ValueError("整体值列全部无法转为数值，请检查参考数据")
 
-        # 添加P1-P20测量点数据，直接使用参考数据中的P列
+        # 添加P1-P20测量点数据，直接使用参考数据中的P列（缺失填0，确定性填充非随机）
         for i in range(1, 21):
             col_name = f'P{i}'
 

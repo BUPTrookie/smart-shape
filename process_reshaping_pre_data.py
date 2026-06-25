@@ -12,7 +12,7 @@ import logging
 # 添加当前目录到路径以便导入rail_binning_algorithm
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from rail_binning_algorithm import binning_algorithm
+from rail_binning_algorithm import RailBinningCore
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -26,15 +26,18 @@ def extract_and_process_pre_data():
     print("处理Reshaping表Pre状态数据 - DZ算法")
     print("=" * 60)
 
-    # 1. 读取Reshaping表数据
-    input_file = "Data/total_final_processed.xlsx"
-    logger.info(f"读取Excel文件: {input_file}")
+    # 1. 读取数据（canonical 数据源 total.csv；兼容 xlsx 取 Reshaping 表）
+    input_file = "Data/total.csv"
+    logger.info(f"读取数据文件: {input_file}")
 
     try:
-        df = pd.read_excel(input_file, sheet_name='Reshaping')
+        if input_file.lower().endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(input_file, sheet_name='Reshaping')
+        else:
+            df = pd.read_csv(input_file)
         logger.info(f"成功读取数据，共 {len(df)} 行")
     except Exception as e:
-        logger.error(f"读取Excel文件失败: {e}")
+        logger.error(f"读取数据文件失败: {e}")
         return
 
     # 2. 筛选Pre状态数据
@@ -45,30 +48,18 @@ def extract_and_process_pre_data():
         logger.warning("没有找到Pre状态数据")
         return
 
-    # 3. 提取DZ算法需要的字段
-    # 创建符合DZ算法要求的数据结构
-    dz_data = pd.DataFrame()
-    dz_data['SN'] = range(1, len(pre_data) + 1)
-    dz_data['FAI156'] = pre_data['FAI156']
+    # 3. 校验算法必需字段（FAI156 整体值 + P1-P20 测量点）
+    required = ['FAI156'] + [f'P{i}' for i in range(1, 21)]
+    missing = [c for c in required if c not in pre_data.columns]
+    if missing:
+        logger.error(f"Pre 数据缺少必需字段: {missing}")
+        return
 
-    # 添加P1-P20字段
-    for i in range(1, 21):
-        p_col = f'P{i}'
-        if p_col in pre_data.columns:
-            dz_data[f'FAI156-{p_col}'] = pre_data[p_col]
-        else:
-            logger.warning(f"缺少P{i}字段")
-            dz_data[f'FAI156-{p_col}'] = None
-
-    # 保存提取的DZ数据
-    temp_file = "Data/dz_pre_temp.csv"
-    dz_data.to_csv(temp_file, index=False)
-    logger.info(f"已保存提取的DZ数据到: {temp_file}")
-
-    # 4. 使用DZ算法处理
+    # 4. 使用重构版 DZ 算法处理（直接传 DataFrame，无需落临时文件）
     logger.info("开始使用DZ算法处理数据...")
     try:
-        result_df = binning_algorithm(temp_file, "X9600", "DZ")
+        processor = RailBinningCore('X9600_DZ')
+        result_df = processor.process(pre_data.copy())
         logger.info(f"DZ算法处理完成，得到 {len(result_df)} 行结果")
     except Exception as e:
         logger.error(f"DZ算法处理失败: {e}")

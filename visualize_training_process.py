@@ -74,7 +74,9 @@ def show_training_process():
 
     for alpha in alphas:
         start = time.time()
-        model = MultiOutputRegressor(Ridge(alpha=alpha))
+        # 单点位演示 CV：直接用 Ridge，不要套 MultiOutputRegressor
+        # （1D y 喂给 MultiOutputRegressor 会报 "y must have at least two dimensions"）
+        model = Ridge(alpha=alpha)
         # 使用第一个点位作为示例
         kf = KFold(n_splits=5, shuffle=True, random_state=42)
         scores = cross_val_score(model, X_scaled, y.iloc[:, 0],
