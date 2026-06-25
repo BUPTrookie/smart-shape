@@ -39,3 +39,12 @@ ignore = [
 
 [tool.ruff.format]
 quote-style = "double"
+
+# ===========================================================================
+# pytest 配置
+# pythonpath = ["."]：让 tests/ 下的测试能 import 根级模块（如 from shaping import ...）
+# testpaths：只在 tests/ 目录发现测试
+# ===========================================================================
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

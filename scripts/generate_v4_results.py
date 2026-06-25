@@ -17,10 +17,11 @@ KeyError。现统一以算法为唯一真源——本脚本只负责「跑算法
 
 import pandas as pd
 
+from paths import DATA_DIR, OUTPUT_DIR
 from rail_binning_algorithm_v4 import RailBinningCoreV4
 
-DATA_FILE = "Data/total.csv"
-OUTPUT_FILE = "test_v4_results.csv"
+DATA_FILE = str(DATA_DIR / "total.csv")
+OUTPUT_FILE = str(OUTPUT_DIR / "test_v4_results.csv")
 
 
 def generate_v4_results(data_file: str = DATA_FILE, output_file: str = OUTPUT_FILE) -> pd.DataFrame:

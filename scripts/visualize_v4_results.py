@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from paths import OUTPUT_DIR
+
 # 设置中文字体
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
@@ -10,7 +12,7 @@ plt.style.use('seaborn-v0_8')
 
 class V4ResultVisualizer:
     def __init__(self):
-        self.data_file = "test_v4_results.csv"
+        self.data_file = str(OUTPUT_DIR / "test_v4_results.csv")
         self.output_dir = "Output/v4_visualization"
         self.ensure_output_dir()
 

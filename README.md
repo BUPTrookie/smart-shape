@@ -26,7 +26,7 @@
 | `rs_impact_analyzer.py` | 压头影响分析主流程（`RSImpactAnalyzer`，5类流水线：DataLoader/FeatureEngineer/ModelTrainer/ResultExporter/编排） |
 | `rs_impact_analyzer_v2.py` | RMSE 优化版（距离核特征 + 工况分模型 + 异常值处理） |
 | `rs_impact_config.py` | 配置（数据路径、特征工程开关、模型参数、优化策略） |
-| `analyze_rs_segments.py` | 对 Reshaping 表做 RS 分段统计 |
+| `scripts/analyze_rs_segments.py` | 对 Reshaping 表做 RS 分段统计 |
 
 **算法要点**：按 `Barcode` 配对 Pre/Post，Δ=Post−Pre；构造 26 个特征（13位置 + 7 Pre曲线 + 6交互）；`MultiOutputRegressor + Ridge`，5折交叉验证选 alpha，默认 85/15 训练测试划分。
 
@@ -73,21 +73,33 @@ uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 
 ```
 Code/
-├── rail_binning_algorithm*.py   # 分BIN核心算法（基础版 + V4）
-├── rs_impact_analyzer*.py       # 压头影响分析（原版 + v2优化）
-├── rs_impact_config.py          # 压头分析配置
-├── constants/                   # 算法常量（字段/标签/BIN/产品配置）
-├── utils/                       # 数据处理与可视化工具
-├── Binning/                     # 早期分箱与分组脚本
-├── docs/                        # 算法文档
-├── app.py                       # 在线服务入口（FastAPI）
-├── predictor.py                 # 推理模块（模型常驻）
-├── api/                         # 路由与 Pydantic 模型
-├── db/                          # SQLAlchemy + SQLite（4张表）
-├── paths.py                     # 统一路径管理
-├── Data/                        # 原始数据（不入 git，本地管理）
-├── Output/                      # 算法产物（不入 git，可重新生成）
-└── charts/                      # 生成的图表（不入 git）
+├── 核心代码(根级，平级 import)
+│   rail_binning_algorithm.py / _v4.py        # 分 BIN（基础版 + V4）
+│   rs_impact_analyzer.py / _v2.py            # 压头影响分析（v1 可信 + v2 探索）
+│   rs_impact_config.py                       # 配置
+│   shaping.py / planner.py / predictor.py    # 案例匹配 / 方案生成 / 推理
+│   app.py / paths.py                         # FastAPI 入口 / 统一路径
+├── api/          # 路由 + Pydantic 模型
+├── db/           # SQLAlchemy + SQLite（4 张表）
+├── constants/    # 算法常量（字段/标签/BIN/产品配置）
+├── tests/        # 单元测试（pytest，pyproject 设 pythonpath=["."]）
+├── scripts/      # 可视化/数据处理/评估脚本（python -m scripts.xxx 运行）
+├── docs/         # 文档（结题报告 + 算法说明）
+├── Data/         # 原始数据（不入 git，本地管理）
+├── Output/       # 算法产物（不入 git，可重新生成）
+└── charts/       # 图表（不入 git）
+```
+
+## 测试与脚本
+
+```bash
+# 单元测试
+pytest
+
+# scripts/ 下的脚本用 -m 运行（保证能 import 根级模块）
+python -m scripts.generate_v4_results         # 生成 V4 可视化用 CSV
+python -m scripts.eval_yield                  # 案例匹配良率评估
+python -m scripts.dz_four_segment_validation  # 4 段分类标签验证
 ```
 
 ## 数据说明

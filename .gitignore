@@ -11,11 +11,13 @@ Data/
 Output/
 charts/
 
-# ===== 根目录运行产生的临时结果 =====
-/processed_reshaping_data.csv
-/test_v4_results.csv
-/test_1209_DZ_result.csv
+# ===== 产物 CSV（已统一移 Output/，由 Output/ 规则忽略）=====
 utils/shape_comparison_summary.csv
+
+# ===== Word 临时/锁文件与 docx 产物（不入库；md 为文档源）=====
+*.docx
+~$*
+~WRL*.tmp
 
 # ===== 日志 =====
 *.log

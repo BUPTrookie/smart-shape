@@ -5,6 +5,8 @@ import os
 import matplotlib
 import warnings
 
+from paths import OUTPUT_DIR
+
 # 禁用所有matplotlib警告
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -20,7 +22,7 @@ class V4ShapeVisualizer:
     def __init__(self):
         # 优先使用可配置阈值的结果文件
 
-        self.data_file = "test_v4_results.csv"
+        self.data_file = str(OUTPUT_DIR / "test_v4_results.csv")
         print("使用默认阈值结果文件")
 
         self.output_dir = "Output/v4_visualization"
