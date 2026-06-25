@@ -24,7 +24,7 @@
 | 文件 | 说明 |
 |------|------|
 | `rs_impact_analyzer.py` | 压头影响分析主流程（`RSImpactAnalyzer`，5类流水线：DataLoader/FeatureEngineer/ModelTrainer/ResultExporter/编排） |
-| `rs_impact_analyzer_v2.py` | RMSE 优化版（距离核特征 + 工况分模型 + 异常值处理） |
+| `rs_impact_analyzer_v2.py` | RMSE 优化探索版（本地保留、不入库；结论不采纳，生产用 v1） |
 | `rs_impact_config.py` | 配置（数据路径、特征工程开关、模型参数、优化策略） |
 | `scripts/analyze_rs_segments.py` | 对 Reshaping 表做 RS 分段统计 |
 

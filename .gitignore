@@ -28,3 +28,6 @@ utils/shape_comparison_summary.csv
 
 # ===== 嵌入式 git 仓库（独立项目，不作为 submodule 跟踪）=====
 /smart_shape/
+
+# ===== v2 探索版（保留本地历史，不入版本管理；生产用 v1）=====
+/rs_impact_analyzer_v2.py
